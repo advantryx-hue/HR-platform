@@ -1,0 +1,2882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdvantryX · HR Leave Platform</title>
+<style>
+:root {
+  --bg:#f5f4f1;--surface:#fff;--surface2:#f0efe9;--surface3:#e8e7e0;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#18180f;--text2:#6b6a63;--text3:#a09f98;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-text:#1d4ed8;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-text:#15803d;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-text:#92400e;
+  --red:#dc2626;--red-bg:#fef2f2;--red-text:#991b1b;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;--purple-text:#5b21b6;
+  --r:10px;--rs:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,0.07);}
+.login-logo{text-align:center;margin-bottom:2rem;}
+.login-logo-badge{display:inline-block;background:var(--blue);color:#fff;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;border-radius:6px;margin-bottom:8px;}
+.login-logo h1{font-size:18px;font-weight:600;margin-bottom:4px;}
+.login-logo p{font-size:12px;color:var(--text3);}
+.login-field{margin-bottom:14px;}
+.login-field label{display:block;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;}
+.login-field input{width:100%;font-size:13px;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface);color:var(--text);outline:none;font-family:inherit;transition:border-color 0.15s;}
+.login-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+.login-btn{width:100%;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity 0.15s;margin-top:4px;}
+.login-btn:hover{opacity:0.88;}
+.login-err{display:none;background:var(--red-bg);color:var(--red-text);border:1px solid #fecaca;border-radius:var(--rs);padding:8px 12px;font-size:12px;margin-bottom:12px;}
+.login-hint{text-align:center;font-size:11px;color:var(--text3);margin-top:1rem;}
+
+/* ── SIDEBAR USER DISPLAY ── */
+.sidebar-user-info{padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);}
+.user-info-row{display:flex;align-items:center;gap:8px;}
+.user-avatar-sm{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-info-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-info-role{font-size:10px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px;flex-shrink:0;border-radius:4px;}
+.logout-btn:hover{color:var(--red);background:var(--red-bg);}
+
+/* ── LAYOUT ── */
+.app{display:flex;min-height:100vh;}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex-shrink:0;}
+.main{flex:1;overflow:auto;}
+
+/* ── SIDEBAR ── */
+.sidebar-logo{padding:1.25rem 1.25rem 0.75rem;border-bottom:1px solid var(--border);}
+.logo-title{font-size:13px;font-weight:700;letter-spacing:0.06em;color:var(--text);}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+.sidebar-user{padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);}
+.user-selector{width:100%;font-size:12px;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);outline:none;cursor:pointer;}
+.sidebar-nav{padding:0.5rem 0.5rem;flex:1;}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--text3);text-transform:uppercase;padding:0.5rem 0.75rem 0.25rem;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--rs);cursor:pointer;font-size:13px;color:var(--text2);margin-bottom:1px;transition:all 0.12s;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--blue-bg);color:var(--blue);font-weight:500;}
+.nav-item .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center;}
+.nav-icon{font-size:16px;flex-shrink:0;}
+.sidebar-footer{padding:1rem 1.25rem;border-top:1px solid var(--border);font-size:11px;color:var(--text3);}
+
+/* ── PANELS ── */
+.panel{display:none;padding:1.5rem 2rem;}
+.panel.active{display:block;}
+.page-title{font-size:20px;font-weight:600;margin-bottom:4px;}
+.page-sub{font-size:13px;color:var(--text2);margin-bottom:1.5rem;}
+
+/* ── METRIC CARDS ── */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;}
+.metric-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:4px;}
+.metric-val{font-size:26px;font-weight:600;line-height:1.1;margin-bottom:2px;}
+.metric-sub{font-size:11px;color:var(--text3);}
+.mv-blue{color:var(--blue);}
+.mv-green{color:var(--green);}
+.mv-amber{color:var(--amber);}
+.mv-red{color:var(--red);}
+.prog{margin-top:8px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;}
+.prog-bar{height:100%;border-radius:2px;transition:width 0.6s;}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;}
+.card-title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+
+/* ── PILLS / BADGES ── */
+.pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.pill-accepted,.pill-acceptée,.pill-accepté{background:var(--green-bg);color:var(--green-text);}
+.pill-pending{background:var(--amber-bg);color:var(--amber-text);}
+.pill-rejected,.pill-refusée{background:var(--red-bg);color:var(--red-text);}
+.pill-annual{background:var(--blue-bg);color:var(--blue-text);}
+.pill-sick{background:#fdf4ff;color:#6b21a8;}
+.pill-emergency{background:#fff7ed;color:#9a3412;}
+.pill-unpaid{background:var(--surface2);color:var(--text2);}
+.pill-comp{background:#ecfeff;color:#155e75;}
+.pill-other{background:var(--surface2);color:var(--text2);}
+
+/* ── FORM ── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group.full{grid-column:1/-1;}
+label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;}
+input,select,textarea{font-size:13px;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface);color:var(--text);outline:none;font-family:inherit;transition:border-color 0.15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);}
+textarea{resize:vertical;min-height:80px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:var(--rs);font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all 0.15s;font-family:inherit;}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+.btn-primary:hover{opacity:0.88;}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover{opacity:0.88;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{opacity:0.88;}
+.btn-ghost{background:none;border-color:var(--border2);color:var(--text2);}
+.btn-ghost:hover{background:var(--surface2);}
+.btn-sm{padding:4px 10px;font-size:11px;}
+
+/* ── QUOTA BAR ── */
+.quota-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.quota-row:last-child{border-bottom:none;}
+.quota-name{font-size:12px;font-weight:500;width:160px;flex-shrink:0;}
+.quota-bar-wrap{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;position:relative;}
+.quota-bar{height:100%;border-radius:4px;transition:width 0.5s;}
+.quota-label{font-size:11px;color:var(--text2);width:90px;text-align:right;flex-shrink:0;}
+.quota-over{font-size:10px;color:var(--red);font-weight:600;flex-shrink:0;}
+
+/* ── WORKFLOW TIMELINE ── */
+.timeline{position:relative;padding-left:28px;}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:1px;background:var(--border);}
+.tl-item{position:relative;margin-bottom:16px;}
+.tl-dot{position:absolute;left:-24px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;top:2px;}
+.tl-dot.done{background:var(--green);color:#fff;}
+.tl-dot.pending{background:var(--amber);color:#fff;}
+.tl-dot.rejected{background:var(--red);color:#fff;}
+.tl-dot.idle{background:var(--surface2);border:1px solid var(--border2);}
+.tl-label{font-size:12px;font-weight:500;color:var(--text);}
+.tl-sub{font-size:11px;color:var(--text3);}
+
+/* ── ALERT ── */
+.alert{padding:10px 14px;border-radius:var(--rs);font-size:12px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.alert-success{background:var(--green-bg);color:var(--green-text);border:1px solid #bbf7d0;}
+.alert-warn{background:var(--amber-bg);color:var(--amber-text);border:1px solid #fde68a;}
+.alert-err{background:var(--red-bg);color:var(--red-text);border:1px solid #fecaca;}
+
+/* ── EMPLOYEE CARD ── */
+.emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:1.25rem;}
+.emp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;display:flex;flex-direction:column;gap:6px;}
+.emp-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
+.emp-name{font-size:13px;font-weight:600;}
+.emp-email{font-size:11px;color:var(--text3);}
+.emp-quota-mini{margin-top:4px;}
+.emp-quota-label{font-size:10px;color:var(--text3);margin-bottom:3px;display:flex;justify-content:space-between;}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.filter-bar select,.filter-bar input{font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);outline:none;}
+.filter-bar input{min-width:200px;}
+
+/* ── ACTION BTNS ── */
+.action-group{display:flex;gap:4px;}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:999;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--r);padding:1.5rem;max-width:480px;width:90%;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:1rem;}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .sidebar{width:56px;}
+  .nav-item span,.logo-sub,.logo-title,.sidebar-user,.sidebar-footer,.nav-section{display:none;}
+  .metrics{grid-template-columns:1fr 1fr;}
+  .grid2,.grid3{grid-template-columns:1fr;}
+  .panel{padding:1rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<!-- ── LOADING OVERLAY ── -->
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.25);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:1.5rem 2rem;display:flex;align-items:center;gap:12px;box-shadow:0 4px 24px rgba(0,0,0,0.15);">
+    <div style="width:20px;height:20px;border:2.5px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin 0.7s linear infinite;"></div>
+    <span style="font-size:13px;font-weight:500;color:#374151;">Synchronisation Google Sheets…</span>
+  </div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg);}}</style>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-badge">AdvantryX</div>
+      <h1>HR Leave Platform</h1>
+      <p>Connectez-vous avec votre email professionnel</p>
+    </div>
+    <div class="login-err" id="login-err">Email ou mot de passe incorrect.</div>
+    <div class="login-field">
+      <label>Adresse email</label>
+      <input type="email" id="login-email" placeholder="prenom.nom@advantryx.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Mot de passe</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Se connecter</button>
+    <div class="login-hint">Mot de passe par défaut : <strong>password</strong></div>
+    <div style="margin-top:1rem;text-align:center;">
+      <button onclick="clearAndReload()" style="background:none;border:none;color:var(--text3);font-size:10px;cursor:pointer;text-decoration:underline;">
+        Problème de connexion ? Réinitialiser les données locales
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="app-shell" style="display:none;">
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">AdvantryX</div>
+    <div class="logo-sub">HR Leave Platform</div>
+  </div>
+  <div class="sidebar-user-info">
+    <div class="user-info-row">
+      <div class="user-avatar-sm" id="sidebar-avatar"></div>
+      <div style="min-width:0;">
+        <div class="user-info-name" id="sidebar-name"></div>
+        <div class="user-info-role" id="sidebar-role"></div>
+      </div>
+      <button class="logout-btn" title="Déconnexion" onclick="doLogout()">⏏</button>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Employee</div>
+    <button class="nav-item" onclick="nav('my-requests')"><span class="nav-icon">📋</span><span>My Requests</span></button>
+    <button class="nav-item" onclick="nav('new-request')"><span class="nav-icon">➕</span><span>New Request</span></button>
+    <div class="nav-section" id="nav-admin-label">HR Admin</div>
+    <button class="nav-item" id="nav-dashboard" onclick="nav('dashboard')"><span class="nav-icon">📊</span><span>Dashboard</span></button>
+    <button class="nav-item" id="nav-approvals" onclick="nav('approvals')"><span class="nav-icon">✅</span><span>Approvals</span><span class="badge" id="pending-badge">0</span></button>
+    <button class="nav-item" id="nav-employees" onclick="nav('employees')"><span class="nav-icon">👥</span><span>Employees</span></button>
+    <button class="nav-item" id="nav-history" onclick="nav('history')"><span class="nav-icon">📂</span><span>All Requests</span></button>
+    <button class="nav-item" id="nav-user-mgmt" onclick="nav('user-mgmt')"><span class="nav-icon">⚙️</span><span>User Management</span></button>
+    <button class="nav-item" id="nav-leave-types" onclick="nav('leave-types')"><span class="nav-icon">📝</span><span>Leave Types</span></button>
+    <button class="nav-item" id="nav-team-dash" onclick="nav('team-dash')"><span class="nav-icon">👥</span><span>Team Dashboard</span></button>
+  </nav>
+  <div class="sidebar-footer">
+    Quota: 1.83 j/mois<br>
+    <button onclick="nav('change-password')" style="background:none;border:none;color:var(--blue);font-size:11px;cursor:pointer;padding:0;margin-top:4px;">🔑 Changer mot de passe</button>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+  <!-- ── MY REQUESTS ── -->
+  <div class="panel" id="panel-my-requests">
+    <div class="page-title" id="my-title">My Leave Requests</div>
+    <div class="page-sub">Track the status of your submitted requests</div>
+
+    <div id="my-quota-section" class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">My Leave Balance — <span id="my-quota-year">2025</span></div>
+      <div id="my-quota-content"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Request History
+        <select style="font-size:11px;padding:4px 8px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);" onchange="renderMyRequests(this.value)">
+          <option value="all">All years</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+        </select>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Ref</th><th>Type</th><th>Start</th><th>End</th><th>Days</th><th>Status</th><th>Submitted</th><th>Reason</th></tr></thead>
+          <tbody id="my-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── NEW REQUEST ── -->
+  <div class="panel" id="panel-new-request">
+    <div class="page-title">Submit Leave Request</div>
+    <div class="page-sub">Fill in the form below. Requests are reviewed by HR.</div>
+    <div id="form-alert" style="display:none;"></div>
+    <div class="card" style="max-width:680px;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" id="f-name" readonly>
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="f-email" readonly>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type of leave *</label>
+          <select id="f-type" onchange="calcDays()">
+            <option value="">Sélectionner…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Day format *</label>
+          <select id="f-dayfmt" onchange="calcDays()">
+            <option value="full">Full day</option>
+            <option value="half-am">Half Day – Morning</option>
+            <option value="half-pm">Half Day – Afternoon</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start date *</label>
+          <input type="date" id="f-start" onchange="calcDays()">
+        </div>
+        <div class="form-group">
+          <label>End date *</label>
+          <input type="date" id="f-end" onchange="calcDays()">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Total days requested</label>
+          <input type="number" id="f-days" min="0.5" step="0.5" placeholder="Auto-calculated">
+        </div>
+        <div class="form-group">
+          <label>Quota check</label>
+          <div id="f-quota-check" style="padding:8px 10px;background:var(--surface2);border-radius:var(--rs);font-size:12px;color:var(--text2);">Select dates to check</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Reason for leave</label>
+          <textarea id="f-reason" placeholder="Optional: describe your reason…"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="submitRequest()">Submit Request</button>
+        <button class="btn btn-ghost" onclick="resetForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DASHBOARD ── -->
+  <div class="panel" id="panel-dashboard">
+    <div class="page-title">HR Dashboard</div>
+    <div class="page-sub">Overview of leave activity across all employees</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:1rem;align-items:center;">
+      <select id="dash-year" onchange="renderDashboard()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
+        <option value="all">Toutes les années</option>
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+      </select>
+    </div>
+
+    <div class="metrics" id="dash-metrics"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Leave by type</div>
+        <div id="dash-by-type"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Monthly leave days taken</div>
+        <canvas id="dash-monthly-chart" height="180" role="img" aria-label="Monthly leave days"></canvas>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">Quota utilisé par employé (tous congés · <span id="quota-year-label">2025</span>)</div>
+      <div id="dash-quota-bars"></div>
+    </div>
+  </div>
+
+  <!-- ── APPROVALS ── -->
+  <div class="panel" id="panel-approvals">
+    <div class="page-title">Pending Approvals</div>
+    <div class="page-sub">Review and act on leave requests awaiting decision</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ref</th><th>Employee</th><th>Type</th><th>Start</th><th>End</th><th>Days</th><th>Reason</th><th>Submitted</th><th>Actions</th></tr></thead>
+        <tbody id="approvals-tbody"></tbody>
+      </table>
+    </div>
+    <div id="no-pending" style="display:none;text-align:center;padding:2rem;color:var(--text3);">✅ No pending requests — all caught up!</div>
+  </div>
+
+  <!-- ── EMPLOYEES ── -->
+  <div class="panel" id="panel-employees">
+    <div class="page-title">Employee Leave Balances</div>
+    <div class="page-sub">Accrued quota and days used per employee</div>
+    <div style="display:flex;gap:8px;margin-bottom:1rem;align-items:center;">
+      <select id="emp-year" onchange="renderEmployees()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+      </select>
+      <span style="font-size:12px;color:var(--text2);">Quota accrued = months elapsed × 1.83 days</span>
+    </div>
+    <div class="emp-grid" id="emp-grid"></div>
+  </div>
+
+  <!-- ── ALL REQUESTS ── -->
+  <div class="panel" id="panel-history">
+    <div class="page-title">All Leave Requests</div>
+    <div class="page-sub">Full history with filtering</div>
+    <div class="filter-bar">
+      <input type="text" id="hist-search" placeholder="Search employee, type, ref…" oninput="renderHistory()">
+      <select id="hist-status" onchange="renderHistory()">
+        <option value="">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="accepted">Accepted</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <select id="hist-year" onchange="renderHistory()">
+        <option value="">All years</option>
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+      </select>
+      <select id="hist-type" onchange="renderHistory()">
+        <option value="">All types</option>
+        <option>Paid Leave (Annual)</option>
+        <option>Sick Leave</option>
+        <option>Unpaid Leave</option>
+        <option>Emergency Leave</option>
+        <option>Compensatory Off</option>
+        <option>Maternity/Paternity Leave</option>
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ref</th><th>Employee</th><th>Type</th><th>Start</th><th>End</th><th>Days</th><th>Status</th><th>Reason</th><th>Submitted</th><th>Actions</th></tr></thead>
+        <tbody id="hist-tbody"></tbody>
+      </table>
+    </div>
+    <div id="hist-count" style="margin-top:8px;font-size:11px;color:var(--text3);"></div>
+  </div>
+
+  <!-- ── USER MANAGEMENT ── -->
+  <div class="panel" id="panel-user-mgmt">
+    <div class="page-title">User Management</div>
+    <div class="page-sub">Gérer les comptes employés et administrateurs</div>
+
+    <div id="um-alert" style="display:none;margin-bottom:1rem;"></div>
+
+    <!-- Add new user -->
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">Ajouter un utilisateur</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prénom et Nom *</label>
+          <input type="text" id="um-name" placeholder="Ex: Fatma Ben Ali">
+        </div>
+        <div class="form-group">
+          <label>Email @advantryx.com *</label>
+          <input type="email" id="um-email" placeholder="f.benali@advantryx.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Rôle *</label>
+          <select id="um-role" onchange="toggleTeamField()">
+            <option value="employee">👤 Employé</option>
+            <option value="team_manager">🏷 Manager d'équipe</option>
+            <option value="superadmin">👑 Super Admin</option>
+            <option value="comptable">📊 Expert Comptable</option>
+          </select>
+        </div>
+        <div class="form-group" id="um-team-group">
+          <label>Équipe</label>
+          <select id="um-team">
+            <option value="">— Aucune équipe —</option>
+            <option value="textile">🧵 Textile</option>
+            <option value="pharma">💊 Pharma</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mot de passe initial</label>
+          <input type="text" id="um-password" placeholder="Défaut: password" autocomplete="off">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addUser()">➕ Ajouter l'utilisateur</button>
+    </div>
+
+    <!-- Users table -->
+    <div class="card">
+      <div class="card-title">
+        Utilisateurs <span id="um-count" style="font-weight:400;color:var(--text3);font-size:12px;"></span>
+        <input type="text" id="um-search" placeholder="Rechercher…" oninput="renderUserMgmt()" style="font-size:12px;padding:5px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);width:200px;">
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Équipe</th>
+              <th>Rôle</th>
+              <th>Mot de passe</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="um-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ── SALARY GRID ADMIN ── -->
+  <div class="panel" id="panel-salary-grid">
+    <div class="page-title">Grille salariale</div>
+    <div class="page-sub">Gérer les grades, coefficients d'ancienneté et niveaux de performance</div>
+
+    <div class="grid2" style="margin-bottom:1.25rem;">
+      <!-- Job Grades -->
+      <div class="card">
+        <div class="card-title">Grades (postes)</div>
+        <div id="sg-alert" style="display:none;margin-bottom:10px;"></div>
+        <div class="form-row" style="grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px;">
+          <input type="text" id="sg-grade-label" placeholder="Ex: G3 — Ingénieur" style="font-size:12px;">
+          <input type="number" id="sg-grade-base" placeholder="Base TND" min="0" style="font-size:12px;">
+          <button class="btn btn-primary btn-sm" onclick="addJobGrade()" style="white-space:nowrap;">+ Ajouter</button>
+        </div>
+        <div id="sg-grades-list"></div>
+      </div>
+      <!-- Seniority brackets — rendered by JS -->
+      <div class="card">
+        <div class="card-title">Coefficients d'ancienneté <span style="font-size:11px;color:var(--text3);font-weight:400;">(expérience totale)</span></div>
+        <div id="sg-seniority-table"></div>
+      </div>
+    </div>
+
+    <!-- Performance levels — rendered by JS -->
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">Niveaux de performance <span style="font-size:11px;color:var(--text3);font-weight:400;">— utilisés pour la note mensuelle et le 13ème salaire</span></div>
+      <div id="sg-perf-levels"></div>
+    </div>
+
+    <!-- Salary simulator for new employee -->
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">Simulateur — Nouveau employé</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="form-group"><label>Grade / Poste</label><select id="sim-grade-sel" onchange="runSimulator()"><option value="">Sélectionner…</option></select></div>
+        <div class="form-group"><label>Expérience totale (années)</label><input type="number" id="sim-exp" min="0" max="50" step="0.5" value="0" oninput="runSimulator()"></div>
+        <div class="form-group"><label>Note de performance (1–5)</label><input type="number" id="sim-perf" min="1" max="5" step="0.5" value="3" oninput="runSimulator()"></div>
+      </div>
+      <div id="sim-result" style="display:none;background:var(--blue-bg);border:1px solid #bfdbfe;border-radius:var(--rs);padding:12px 14px;"></div>
+    </div>
+    <!-- Full simulation table -->
+    <div class="card">
+      <div class="card-title">Grille complète — Grades × Ancienneté (TND brut/mois)</div>
+      <div class="tbl-wrap" id="sg-simulation-table"></div>
+    </div>
+  </div>
+
+  <!-- ── LEAVE TYPES ADMIN ── -->
+  <div class="panel" id="panel-leave-types">
+    <div class="page-title">Types de congés</div>
+    <div class="page-sub">Gérer les types de congés disponibles dans les formulaires</div>
+    <div id="lt-alert" style="display:none;margin-bottom:1rem;"></div>
+    <div class="card" style="max-width:640px;margin-bottom:1.25rem;">
+      <div class="card-title">Ajouter un type</div>
+      <div class="form-row">
+        <div class="form-group"><label>Libellé *</label><input type="text" id="lt-label" placeholder="Ex: Congé mariage"></div>
+        <div class="form-group"><label>Couleur</label><input type="color" id="lt-color" value="#2563eb" style="height:38px;padding:2px 4px;"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Congé payé ?</label>
+          <select id="lt-paid"><option value="true">✅ Oui (payé)</option><option value="false">❌ Non (non payé)</option></select>
+        </div>
+        <div class="form-group">
+          <label>Délai minimum avant (jours)</label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="number" id="lt-advance" min="0" max="30" value="0" style="width:80px;">
+            <span style="font-size:12px;color:var(--text2);">0 = pas de délai minimum</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addLeaveType()">➕ Ajouter</button>
+    </div>
+    <div class="card" style="max-width:640px;">
+      <div class="card-title">Types actifs</div>
+      <div id="lt-list"></div>
+    </div>
+  </div>
+
+  <!-- ── TEAM DASHBOARD ── -->
+  <div class="panel" id="panel-team-dash">
+    <div class="page-title" id="td-title">Team Dashboard</div>
+    <div class="page-sub" id="td-sub">Vue d'ensemble de votre équipe</div>
+    <div style="display:flex;gap:8px;margin-bottom:1.25rem;align-items:center;flex-wrap:wrap;">
+      <select id="td-year" onchange="renderTeamDash()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
+        <option value="2025">2025</option><option value="2026" selected>2026</option>
+      </select>
+      <select id="td-team-filter" onchange="renderTeamDash()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
+        <option value="">Toutes les équipes</option>
+        <option value="textile">🧵 Textile</option>
+        <option value="pharma">💊 Pharma</option>
+      </select>
+    </div>
+    <div class="metrics" id="td-metrics" style="grid-template-columns:repeat(4,1fr);"></div>
+    <div class="grid2" style="margin-bottom:1.25rem;">
+      <div class="card">
+        <div class="card-title">Quota par membre</div>
+        <div id="td-quota-bars"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Congés par type</div>
+        <div id="td-by-type"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">Membres de l'équipe <button class="btn btn-ghost btn-sm" onclick="openProfile(null,'new')" style="margin-left:8px;">+ Voir profil</button></div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>Nom</th><th>Équipe</th><th>Grade</th><th>Embauche</th><th>CIN</th><th>Salaire</th><th>Jours utilisés</th><th>Actions</th></tr></thead>
+        <tbody id="td-members-tbody"></tbody></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Demandes récentes</div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>Ref</th><th>Employé</th><th>Type</th><th>Dates</th><th>Jours</th><th>Statut</th></tr></thead>
+        <tbody id="td-requests-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── PERFORMANCE NOTES ── -->
+  <div class="panel" id="panel-perf">
+    <div class="page-title">Notes de performance mensuelle</div>
+    <div class="page-sub">Notez chaque membre de votre équipe chaque mois (1–5). La moyenne annuelle détermine le 13ème salaire.</div>
+    <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;">
+      <select id="perf-year" onchange="renderPerfPanel()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
+        <option value="2025">2025</option><option value="2026" selected>2026</option>
+      </select>
+      <select id="perf-team-filter" onchange="renderPerfPanel()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
+        <option value="">Toutes les équipes</option>
+        <option value="textile">🧵 Textile</option>
+        <option value="pharma">💊 Pharma</option>
+      </select>
+      <span style="font-size:12px;color:var(--text2);">Seuil 13ème complet : <strong>${PERF_THRESHOLD}</strong> / 5</span>
+    </div>
+
+    <!-- Scoring grid -->
+    <div class="card" style="margin-bottom:1.25rem;overflow-x:auto;">
+      <div class="card-title">Grille de notation mensuelle</div>
+      <div id="perf-grid-wrap"></div>
+    </div>
+
+    <!-- 13th salary summary -->
+    <div class="card">
+      <div class="card-title">Résumé 13ème salaire</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Employé</th><th>Équipe</th><th>Salaire base</th><th>Moyenne annuelle</th><th>13ème salaire</th><th>Statut</th></tr></thead>
+          <tbody id="perf-13th-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── SCORE ENTRY MODAL ── -->
+  <div class="modal-overlay" id="score-modal">
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-title" id="score-modal-title">Note mensuelle</div>
+      <div id="score-alert" style="display:none;margin-bottom:10px;"></div>
+      <div style="text-align:center;margin:1rem 0;" id="score-stars-row"></div>
+      <input type="hidden" id="score-val">
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Commentaire (optionnel)</label>
+        <textarea id="score-comment" rows="3" placeholder="Observations, points forts, axes d'amélioration…"></textarea>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <button class="btn btn-danger btn-sm" onclick="deleteScore()">🗑 Supprimer</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="document.getElementById('score-modal').classList.remove('open')">Annuler</button>
+          <button class="btn btn-primary" onclick="saveScore()">💾 Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EMPLOYEE PROFILE MODAL ── -->
+  <div class="modal-overlay" id="profile-modal">
+    <div class="modal" style="max-width:620px;width:95%;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="modal-title" id="profile-modal-title" style="margin:0;">Profil employé</div>
+        <button class="btn btn-ghost btn-sm" onclick="closeProfile()">✕ Fermer</button>
+      </div>
+      <div id="profile-alert" style="display:none;margin-bottom:10px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="profile-form-grid">
+        <!-- filled dynamically -->
+      </div>
+      <div class="modal-footer" style="padding-top:1rem;border-top:1px solid var(--border);margin-top:1rem;">
+        <button class="btn btn-ghost" onclick="closeProfile()">Annuler</button>
+        <button class="btn btn-primary" onclick="saveProfile()">💾 Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── COMPTABLE PANEL ── -->
+  <div class="panel" id="panel-comptable">
+    <div class="page-title">Rapport Mensuel des Congés</div>
+    <div class="page-sub">Vue comptable — récapitulatif des absences par mois et par employé</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;">
+      <select id="cpt-year" onchange="renderComptable()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
+        <option value="2025">2025</option>
+        <option value="2026" selected>2026</option>
+      </select>
+      <select id="cpt-month" onchange="renderComptable()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
+        <option value="all">Toute l'année</option>
+        <option value="01">Janvier</option><option value="02">Février</option>
+        <option value="03">Mars</option><option value="04">Avril</option>
+        <option value="05">Mai</option><option value="06">Juin</option>
+        <option value="07">Juillet</option><option value="08">Août</option>
+        <option value="09">Septembre</option><option value="10">Octobre</option>
+        <option value="11">Novembre</option><option value="12">Décembre</option>
+      </select>
+      <select id="cpt-team" onchange="renderComptable()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
+        <option value="">Toutes les équipes</option>
+        <option value="textile">🧵 Textile</option>
+        <option value="pharma">💊 Pharma</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="exportCptCSV()" style="margin-left:auto;">⬇ Export CSV</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="metrics" id="cpt-metrics" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;"></div>
+
+    <!-- Monthly summary table -->
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title" id="cpt-table-title">Récapitulatif mensuel</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Employé</th><th>Équipe</th>
+            <th>Congé annuel</th><th>Maladie</th><th>Urgence</th>
+            <th>Non payé</th><th>Comp. Off</th><th>Autre</th>
+            <th style="background:#eff6ff;color:#1d4ed8;">Total jours</th>
+            <th style="background:#f0fdf4;color:#15803d;">Jours payés</th>
+            <th style="background:#fef2f2;color:#991b1b;">Jours non payés</th>
+          </tr></thead>
+          <tbody id="cpt-tbody"></tbody>
+          <tfoot id="cpt-tfoot" style="font-weight:700;background:var(--surface2);"></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Monthly breakdown chart -->
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">Évolution mensuelle des absences (<span id="cpt-chart-yr">2026</span>)</div>
+      <div style="position:relative;height:220px;">
+        <canvas id="cpt-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Leave type distribution -->
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Répartition par type de congé</div>
+        <div id="cpt-by-type"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Top absences — employés</div>
+        <div id="cpt-top-emp"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHANGE PASSWORD ── -->
+  <div class="panel" id="panel-change-password">
+    <div class="page-title">Changer mon mot de passe</div>
+    <div class="page-sub">Votre nouveau mot de passe sera actif immédiatement.</div>
+    <div class="card" style="max-width:420px;">
+      <div id="pwd-alert" style="display:none;margin-bottom:12px;"></div>
+      <div class="form-row" style="grid-template-columns:1fr;">
+        <div class="form-group">
+          <label>Mot de passe actuel</label>
+          <input type="password" id="pwd-current" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label>Nouveau mot de passe</label>
+          <input type="password" id="pwd-new" placeholder="Min. 6 caractères">
+        </div>
+        <div class="form-group">
+          <label>Confirmer le nouveau mot de passe</label>
+          <input type="password" id="pwd-confirm" placeholder="••••••••">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="changePassword()">Enregistrer</button>
+    </div>
+  </div>
+
+</main>
+</div><!-- /#app-shell -->
+
+<!-- ── DETAIL MODAL ── -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-ref">Request Detail</div>
+    <div id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+      <button class="btn btn-danger btn-sm" id="modal-reject" style="display:none;" onclick="modalAction('rejected')">Reject</button>
+      <button class="btn btn-success btn-sm" id="modal-accept" style="display:none;" onclick="modalAction('accepted')">Accept</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ─────────────────────────────────────────────────────────────
+// CONFIG — set your deployed Apps Script URL here
+// ─────────────────────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdQFgUqVHCa2blR65mGIz8iu8ukNdoPuqIaXibiqz9-E2w1sG37qWi_ffVnldzOdN6rw/exec';
+const USE_GSHEETS = APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/');
+
+// ─── API LAYER ────────────────────────────────────────────────
+async function apiGet(action) {
+  if (!USE_GSHEETS) return null;
+  const res  = await fetch(`${APPS_SCRIPT_URL}?action=${action}`);
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); }
+  catch(e) { throw new Error('Réponse non-JSON pour ' + action + ': ' + text.substring(0, 200)); }
+  if (!data.ok) throw new Error(data.error || 'Erreur Apps Script (action: ' + action + ')');
+  return data.data;
+}
+async function apiPost(body) {
+  if (!USE_GSHEETS) return null;
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' }, // Apps Script needs text/plain for doPost
+    body: JSON.stringify(body),
+  });
+  let data;
+  const text = await res.text();
+  console.log('[GS]', body.action, '→', text.substring(0, 300));
+  try { data = JSON.parse(text); }
+  catch(e) { throw new Error('Réponse non-JSON (action:' + (body.action||'?') + '): ' + text.substring(0, 300)); }
+  if (!data.ok) throw new Error(
+    data.error
+    || data.message
+    || ('Erreur Apps Script (action: ' + (body.action||'?') + ') — vérifiez les logs Apps Script')
+  );
+  return data.data;
+}
+
+// Show/hide loading overlay
+function setLoading(on) {
+  document.getElementById('loading-overlay').style.display = on ? 'flex' : 'none';
+}
+
+// ─── CONSTANTS ───────────────────────────────────────────────
+const QUOTA_PER_MONTH = 1.83;
+const ANNUAL_QUOTA = Math.round(QUOTA_PER_MONTH * 12 * 10) / 10; // 21.96
+// advance rule is now per leave type: advanceDays field (0 = no rule)
+
+// ── Leave type store ─────────────────────────────────────────────────────────
+const DEFAULT_LEAVE_TYPES = [
+  {id:'annual',    label:'Paid Leave (Annual)', paid:true,  advanceDays:3, color:'#2563eb'},
+  {id:'sick',      label:'Sick Leave',          paid:true,  advanceDays:0, color:'#7c3aed'},
+  {id:'unpaid',    label:'Unpaid Leave',        paid:false, advanceDays:0, color:'#6b7280'},
+  {id:'emergency', label:'Emergency Leave',     paid:true,  advanceDays:0, color:'#ea580c'},
+  {id:'comp',      label:'Compensatory Off',    paid:true,  advanceDays:0, color:'#0891b2'},
+  {id:'maternity', label:'Maternity/Paternity', paid:true,  advanceDays:2, color:'#db2777'},
+  {id:'other',     label:'Other',               paid:false, advanceDays:0, color:'#9e9e9a'},
+];
+function getLeaveTypes(){ return JSON.parse(localStorage.getItem('hr_leave_types')||'null') || [...DEFAULT_LEAVE_TYPES]; }
+function saveLeaveTypes(arr){ localStorage.setItem('hr_leave_types', JSON.stringify(arr)); }
+function populateLeaveTypeSelect(selId){
+  const sel = document.getElementById(selId); if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Sélectionner…</option>' +
+    getLeaveTypes().map(t=>`<option value="${t.label}" ${cur===t.label?'selected':''}>${t.label}</option>`).join('');
+}
+
+// Default employees — stored in localStorage so admins can add/remove
+// role: 'superadmin' | 'team_manager' | 'employee'
+// team: 'textile' | 'pharma' | null
+const DEFAULT_EMPLOYEES = [
+  // Each employee profile: name,email,isAdmin,role,team + profile fields:
+  // dob, cin, salary, startDate, education, experience, cinFile (base64)
+  {name:"Adam Bouchaala",    email:"a.bouchaala@advantryx.com", isAdmin:true,  role:"superadmin",   team:null,      dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Amir Rekhis",       email:"a.rekhis@advantryx.com",    isAdmin:true,  role:"team_manager", team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Kawthar Ayedi",     email:"k.ayedi@advantryx.com",     isAdmin:true,  role:"team_manager", team:"pharma",  dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Rania Dargouthi",   email:"r.darghouthi@advantryx.com",isAdmin:false, role:"employee",     team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Eya Ibn Hamda",     email:"e.ibnhamda@advantryx.com",  isAdmin:false, role:"employee",     team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Siwar Chbili",      email:"s.chbili@advantryx.com",    isAdmin:false, role:"employee",     team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Ayman Ben Ismail",  email:"a.benismail@advantryx.com", isAdmin:false, role:"employee",     team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Rebah Ajroud",      email:"r.ajroud@advantryx.com",    isAdmin:false, role:"employee",     team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Sahar Mallouli",    email:"s.mallouli@advantryx.com",  isAdmin:false, role:"employee",     team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Othman Turki",      email:"o.turki@advantryx.com",     isAdmin:false, role:"employee",     team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Islem Benrhouma",   email:"i.benrhouma@advantryx.com", isAdmin:false, role:"employee",     team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Kamel ABouchaala",  email:"k.bouchaala@advantryx.com", isAdmin:false, role:"employee",     team:"textile", dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com", isAdmin:false, role:"employee",     team:"pharma",  dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Imen Hentati",      email:"i.hentati@advantryx.com",   isAdmin:false, role:"employee",     team:"pharma",  dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Ismail Abid",       email:"i.abid@advantryx.com",      isAdmin:false, role:"employee",     team:"pharma",  dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+  {name:"Rami Chabchoub",    email:"r.chabchoub@advantryx.com", isAdmin:false, role:"employee",     team:"pharma",  dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
+];
+
+// ── Team helpers ────────────────────────────────────────────────────────────
+const TEAM_LABELS  = { textile: '🧵 Textile', pharma: '💊 Pharma', null: '—' };
+const TEAM_COLORS  = { textile: '#0891b2', pharma: '#7c3aed' };
+const TEAM_MANAGERS = {
+  textile : 'a.rekhis@advantryx.com',
+  pharma  : 'k.ayedi@advantryx.com',
+};
+const SUPERADMIN_EMAIL = 'a.bouchaala@advantryx.com';
+
+function getEmpRecord(nameOrEmail){
+  const EMPS = getEmployees();
+  return EMPS.find(e =>
+    e.name  === nameOrEmail ||
+    (e.email||'').toLowerCase() === (nameOrEmail||'').toLowerCase()
+  ) || null;
+}
+
+// Who should approve requests from a given employee name?
+function getApproverEmail(employeeName){
+  const rec = getEmpRecord(employeeName);
+  if(!rec) return SUPERADMIN_EMAIL;
+  if(rec.role === 'superadmin' || rec.role === 'team_manager') return SUPERADMIN_EMAIL; // managers approved by superadmin
+  if(rec.team && TEAM_MANAGERS[rec.team]) return TEAM_MANAGERS[rec.team];
+  return SUPERADMIN_EMAIL;
+}
+
+// Can the currently logged-in session approve a request for employeeName?
+function canApprove(session, request){
+  if(!session) return false;
+  const myEmail = (session.email||'').toLowerCase();
+  if(myEmail === SUPERADMIN_EMAIL) return true;           // superadmin sees all
+  const approver = getApproverEmail(request.employee);
+  return myEmail === approver.toLowerCase();
+}
+function getEmployeesLocal(){
+  const stored = localStorage.getItem('hr_employees');
+  if(!stored) return DEFAULT_EMPLOYEES.map(e=>({...e}));
+  try {
+    const arr = JSON.parse(stored);
+    return arr.map(e => ({ isAdmin: false, role: 'employee', team: null, ...e, email: (e.email||'').toLowerCase().trim() }));
+  } catch(e) { return DEFAULT_EMPLOYEES.map(e=>({...e})); }
+}
+function getEmployees(){ return getEmployeesLocal(); } // sync fallback used throughout
+function saveEmployees(arr){
+  localStorage.setItem('hr_employees', JSON.stringify(arr));
+}
+// Live reference used throughout the app
+let EMPLOYEES = getEmployees();
+
+// Avatar colors per name initial
+const AVATAR_COLORS = ['#2563eb','#7c3aed','#16a34a','#d97706','#dc2626','#0891b2','#9333ea','#15803d'];
+function avatarColor(name){ let h=0;for(let c of name)h=(h*31+c.charCodeAt(0))&0xffffffff;return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length];}
+function initials(name){return name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();}
+
+// ─── SEED DATA (from Google Forms responses) ─────────────────
+const SEED = [
+  {id:"L20250808-01",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-01-10",endDate:"2025-01-10",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-01-10T08:00:00.000Z"},
+  {id:"L20250808-02",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-01-03",endDate:"2025-01-03",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-01-03T08:00:00.000Z"},
+  {id:"L20250808-03",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-02-14",endDate:"2025-02-14",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-02-14T08:00:00.000Z"},
+  {id:"L20250808-04",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-02-27",endDate:"2025-02-27",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-02-27T08:00:00.000Z"},
+  {id:"L20250808-05",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-03-21",endDate:"2025-03-21",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-03-21T08:00:00.000Z"},
+  {id:"L20250808-06",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-03-21",endDate:"2025-03-21",dayType:"Full day",days:1,reason:"Trip to my governorate",status:"accepted",submittedAt:"2025-03-21T08:00:00.000Z"},
+  {id:"L20250808-07",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-03-28",endDate:"2025-03-28",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-03-28T08:00:00.000Z"},
+  {id:"L20250808-08",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-03-28",endDate:"2025-03-28",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-03-28T08:00:00.000Z"},
+  {id:"L20250808-09",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-03-28",endDate:"2025-03-28",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-03-28T08:00:00.000Z"},
+  {id:"L20250808-10",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-04-11",endDate:"2025-04-11",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-04-11T08:00:00.000Z"},
+  {id:"L20250808-11",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-04-18",endDate:"2025-04-18",dayType:"Full day",days:1,reason:"I am sick",status:"accepted",submittedAt:"2025-04-18T08:00:00.000Z"},
+  {id:"L20250808-12",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Compensatory Off",startDate:"2025-04-25",endDate:"2025-04-25",dayType:"Full day",days:1,reason:"worked last weekend",status:"accepted",submittedAt:"2025-04-25T08:00:00.000Z"},
+  {id:"L20250808-13",employee:"Sahar Mallouli",email:"s.mallouli@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-04-25",endDate:"2025-04-25",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-04-25T08:00:00.000Z"},
+  {id:"L20250808-14",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-02",endDate:"2025-05-02",dayType:"Full day",days:1,reason:"engagement familial",status:"accepted",submittedAt:"2025-05-02T08:00:00.000Z"},
+  {id:"L20250808-15",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-02",endDate:"2025-05-02",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-02T08:00:00.000Z"},
+  {id:"L20250808-16",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Unpaid Leave",startDate:"2025-05-02",endDate:"2025-05-02",dayType:"Full day",days:1,reason:"illness and fatigue",status:"accepted",submittedAt:"2025-05-02T08:00:00.000Z"},
+  {id:"L20250808-17",employee:"Islem Benrhouma",email:"i.benrhouma@advantryx.com",type:"Unpaid Leave",startDate:"2025-05-02",endDate:"2025-05-02",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-02T08:00:00.000Z"},
+  {id:"L20250808-18",employee:"Sahar Mallouli",email:"s.mallouli@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-02",endDate:"2025-05-02",dayType:"Full day",days:1,reason:"ma fille est malade",status:"accepted",submittedAt:"2025-05-02T08:00:00.000Z"},
+  {id:"L20250808-19",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Sick Leave",startDate:"2025-05-05",endDate:"2025-05-05",dayType:"Half Day – Morning",days:0.5,reason:"Sick",status:"accepted",submittedAt:"2025-05-05T08:00:00.000Z"},
+  {id:"L20250808-20",employee:"Sahar Mallouli",email:"s.mallouli@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-07",endDate:"2025-05-07",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-07T08:00:00.000Z"},
+  {id:"L20250808-21",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Emergency Leave",startDate:"2025-05-08",endDate:"2025-05-08",dayType:"Full day",days:1,reason:"death cases",status:"accepted",submittedAt:"2025-05-08T08:00:00.000Z"},
+  {id:"L20250808-22",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-09",endDate:"2025-05-09",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-09T08:00:00.000Z"},
+  {id:"L20250808-24",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-05-22",endDate:"2025-05-22",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-22T08:00:00.000Z"},
+  {id:"L20250808-25",employee:"Islem Benrhouma",email:"i.benrhouma@advantryx.com",type:"Emergency Leave",startDate:"2025-05-24",endDate:"2025-05-24",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-05-24T08:00:00.000Z"},
+  {id:"L20250808-26",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-05-26",endDate:"2025-05-26",dayType:"Full day",days:1,reason:"Heartache",status:"accepted",submittedAt:"2025-05-26T08:00:00.000Z"},
+  {id:"L20250808-27",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-29",endDate:"2025-05-31",dayType:"Full day",days:2,reason:"Go to the hospital",status:"accepted",submittedAt:"2025-05-29T08:00:00.000Z"},
+  {id:"L20250808-28",employee:"Kamel ABouchaala",email:"k.bouchaala@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-29",endDate:"2025-05-29",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-05-29T08:00:00.000Z"},
+  {id:"L20250808-29",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-04",endDate:"2025-06-04",dayType:"Half Day – Afternoon",days:0.5,reason:"relocation",status:"accepted",submittedAt:"2025-06-04T08:00:00.000Z"},
+  {id:"L20250808-30",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-05",endDate:"2025-06-05",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-06-05T08:00:00.000Z"},
+  {id:"L20250808-31",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-05",endDate:"2025-06-05",dayType:"Full day",days:1,reason:"relocation",status:"accepted",submittedAt:"2025-06-05T08:00:00.000Z"},
+  {id:"L20250808-32",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-06-05",endDate:"2025-06-06",dayType:"Full day",days:1,reason:"Aller à l'hôpital",status:"accepted",submittedAt:"2025-06-05T08:00:00.000Z"},
+  {id:"L20250808-33",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Sick Leave",startDate:"2025-06-18",endDate:"2025-06-19",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-06-18T08:00:00.000Z"},
+  {id:"L20250808-34",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-19",endDate:"2025-06-19",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-06-19T08:00:00.000Z"},
+  {id:"L20250808-35",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-20",endDate:"2025-06-20",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-06-20T08:00:00.000Z"},
+  {id:"L20250808-36",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-23",endDate:"2025-06-23",dayType:"Full day",days:1,reason:"edit CIN",status:"accepted",submittedAt:"2025-06-23T08:00:00.000Z"},
+  {id:"L20250808-37",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-23",endDate:"2025-06-24",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-06-23T08:00:00.000Z"},
+  {id:"L20250808-38",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-06-30",endDate:"2025-07-04",dayType:"Full day",days:5,reason:"",status:"accepted",submittedAt:"2025-06-30T08:00:00.000Z"},
+  {id:"L20250808-39",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-04",endDate:"2025-07-04",dayType:"Half Day – Afternoon",days:1,reason:"family commitment",status:"accepted",submittedAt:"2025-07-04T08:00:00.000Z"},
+  {id:"L20250808-40",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-07-07",endDate:"2025-07-07",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-07T08:00:00.000Z"},
+  {id:"L20250808-41",employee:"Islem Benrhouma",email:"i.benrhouma@advantryx.com",type:"Sick Leave",startDate:"2025-07-08",endDate:"2025-07-08",dayType:"Half Day – Afternoon",days:0.5,reason:"Maladie",status:"accepted",submittedAt:"2025-07-08T08:00:00.000Z"},
+  {id:"L20250808-42",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Compensatory Off",startDate:"2025-07-08",endDate:"2025-07-08",dayType:"Full day",days:1,reason:"fracture de la main droite",status:"accepted",submittedAt:"2025-07-08T08:00:00.000Z"},
+  {id:"L20250808-43",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Sick Leave",startDate:"2025-07-09",endDate:"2025-07-09",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-07-09T08:00:00.000Z"},
+  {id:"L20250808-44",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-14",endDate:"2025-07-15",dayType:"Full day",days:2,reason:"father medical check-up",status:"accepted",submittedAt:"2025-07-14T08:00:00.000Z"},
+  {id:"L20250808-45",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-21",endDate:"2025-07-24",dayType:"Full day",days:4,reason:"",status:"accepted",submittedAt:"2025-07-21T08:00:00.000Z"},
+  {id:"L20250808-46",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-21",endDate:"2025-07-24",dayType:"Full day",days:4,reason:"",status:"accepted",submittedAt:"2025-07-21T08:00:00.000Z"},
+  {id:"L20250808-47",employee:"Sahar Mallouli",email:"s.mallouli@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-07",endDate:"2025-07-07",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-07T08:00:00.000Z"},
+  {id:"L20250808-49",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-28",endDate:"2025-07-28",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-28T08:00:00.000Z"},
+  {id:"L20250808-50",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Emergency Leave",startDate:"2025-07-18",endDate:"2025-07-18",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-18T08:00:00.000Z"},
+  {id:"L20250808-51",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-07-24",endDate:"2025-07-24",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-24T08:00:00.000Z"},
+  {id:"L20250808-52",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-08-03",endDate:"2025-08-04",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-08-03T08:00:00.000Z"},
+  {id:"L20250808-53",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-08-05",endDate:"2025-08-05",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-08-05T08:00:00.000Z"},
+  {id:"L20250808-54",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-08-06",endDate:"2025-08-06",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-08-06T08:00:00.000Z"},
+  {id:"L20250808-55",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Sick Leave",startDate:"2025-08-08",endDate:"2025-08-08",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-08-08T08:00:00.000Z"},
+  {id:"L20250808-56",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-08-11",endDate:"2025-08-15",dayType:"Full day",days:5,reason:"test",status:"accepted",submittedAt:"2025-08-11T08:00:00.000Z"},
+  {id:"L20250808-59",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Emergency Leave",startDate:"2025-08-08",endDate:"2025-08-08",dayType:"Half Day – Afternoon",days:0.5,reason:"Test",status:"accepted",submittedAt:"2025-08-08T08:00:00.000Z"},
+  {id:"L20250808-60",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-08-08",endDate:"2025-08-08",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-08-08T08:00:00.000Z"},
+  {id:"L20250808-61",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Maternity/Paternity Leave",startDate:"2025-08-15",endDate:"2025-08-15",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-08-15T08:00:00.000Z"},
+  {id:"L20250808-62",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Compensatory Off",startDate:"2025-08-11",endDate:"2025-08-15",dayType:"Half Day – Morning",days:0.75,reason:"",status:"rejected",submittedAt:"2025-08-11T08:00:00.000Z"},
+  {id:"L20250825-63",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-08-25",endDate:"2025-08-25",dayType:"Full day",days:1,reason:"Sickness",status:"accepted",submittedAt:"2025-08-25T08:00:00.000Z"},
+  {id:"L20250828-64",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-08-29",endDate:"2025-08-29",dayType:"Full day",days:1,reason:"Personal family issues",status:"accepted",submittedAt:"2025-08-29T08:00:00.000Z"},
+  {id:"L20250829-65",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-05",endDate:"2025-09-05",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-05T08:00:00.000Z"},
+  {id:"L20250901-66",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-08-25",endDate:"2025-08-25",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-08-25T08:00:00.000Z"},
+  {id:"L20250901-67",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-01",endDate:"2025-09-01",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-09-01T08:00:00.000Z"},
+  {id:"L20250901-68",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Sick Leave",startDate:"2025-08-26",endDate:"2025-08-27",dayType:"Full day",days:2,reason:"Gastroenterite",status:"accepted",submittedAt:"2025-08-26T08:00:00.000Z"},
+  {id:"L20250901-69",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Unpaid Leave",startDate:"2025-09-12",endDate:"2025-09-15",dayType:"Full day",days:2,reason:"Vacation",status:"accepted",submittedAt:"2025-09-12T08:00:00.000Z"},
+  {id:"L20250905-70",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Sick Leave",startDate:"2025-09-01",endDate:"2025-09-01",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-01T08:00:00.000Z"},
+  {id:"L20250915-71",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-09-15",endDate:"2025-09-15",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-09-15T08:00:00.000Z"},
+  {id:"L20250916-72",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-19",endDate:"2025-09-19",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-19T08:00:00.000Z"},
+  {id:"L20250923-73",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-09-23",endDate:"2025-09-23",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-23T08:00:00.000Z"},
+  {id:"L20250929-75",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-09-30",endDate:"2025-10-03",dayType:"Full day",days:3,reason:"",status:"accepted",submittedAt:"2025-09-30T08:00:00.000Z"},
+  {id:"L20250929-76",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-10-03",endDate:"2025-10-03",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-03T08:00:00.000Z"},
+  {id:"L20250930-76",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-25",endDate:"2025-09-25",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-25T08:00:00.000Z"},
+  {id:"L20250930-77",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-29",endDate:"2025-09-29",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-09-29T08:00:00.000Z"},
+  {id:"L20250930-78",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Unpaid Leave",startDate:"2025-09-30",endDate:"2025-09-30",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-30T08:00:00.000Z"},
+  {id:"L20251009-79",employee:"Kamel ABouchaala",email:"k.bouchaala@advantryx.com",type:"Sick Leave",startDate:"2025-10-09",endDate:"2025-10-09",dayType:"Full day",days:1,reason:"Malade",status:"accepted",submittedAt:"2025-10-09T08:00:00.000Z"},
+  {id:"L20251009-80",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-10-09",endDate:"2025-10-09",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-09T08:00:00.000Z"},
+  {id:"L20251013-81",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-10-13",endDate:"2025-10-13",dayType:"Full day",days:1,reason:"Bronchite",status:"accepted",submittedAt:"2025-10-13T08:00:00.000Z"},
+  {id:"L20251014-82",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-10-14",endDate:"2025-10-14",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-14T08:00:00.000Z"},
+  {id:"L20251014-83",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-10-17",endDate:"2025-10-17",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-17T08:00:00.000Z"},
+  {id:"L20251014-84",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-09-30",endDate:"2025-10-10",dayType:"Full day",days:9,reason:"",status:"accepted",submittedAt:"2025-09-30T08:00:00.000Z"},
+  {id:"L20251015-85",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-10-30",endDate:"2025-10-31",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-10-30T08:00:00.000Z"},
+  {id:"L20251028-86",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-10-28",endDate:"2025-10-28",dayType:"Half Day – Afternoon",days:1,reason:"",status:"accepted",submittedAt:"2025-10-28T08:00:00.000Z"},
+  {id:"L20251034-87",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-03",endDate:"2025-11-03",dayType:"Full day",days:1,reason:"Sickness",status:"accepted",submittedAt:"2025-11-03T08:00:00.000Z"},
+  {id:"L20251043-88",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-11-14",endDate:"2025-11-14",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-14T08:00:00.000Z"},
+  {id:"L20251048-89",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-17",endDate:"2025-11-17",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-17T08:00:00.000Z"},
+  {id:"L20251050-90",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-19",endDate:"2025-11-19",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-19T08:00:00.000Z"},
+  {id:"L20251051-91",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-20",endDate:"2025-11-20",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-20T08:00:00.000Z"},
+  {id:"L20251052-92",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-21",endDate:"2025-11-21",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-21T08:00:00.000Z"},
+  {id:"L20251052-93",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-11-21",endDate:"2025-11-21",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-21T08:00:00.000Z"},
+  {id:"L20251057-94",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-11-27",endDate:"2025-11-27",dayType:"Half Day – Afternoon",days:0.5,reason:"Afternoon",status:"accepted",submittedAt:"2025-11-27T08:00:00.000Z"},
+  {id:"L20251057-95",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-11-28",endDate:"2025-11-28",dayType:"Half Day – Afternoon",days:0.5,reason:"Afternoon",status:"accepted",submittedAt:"2025-11-28T08:00:00.000Z"},
+  {id:"L20251064-96",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-12-04",endDate:"2025-12-04",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-12-04T08:00:00.000Z"},
+  {id:"L20251069-97",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-12-08",endDate:"2025-12-08",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-12-08T08:00:00.000Z"},
+  {id:"L20251070-98",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-12-09",endDate:"2025-12-09",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-12-09T08:00:00.000Z"},
+];
+
+// ─── STATE ───────────────────────────────────────────────────
+let REQUESTS = JSON.parse(localStorage.getItem('hr_requests') || 'null') || [...SEED];
+let currentUser = null; // name string or 'admin'
+let currentModal = null;
+let chartInstance = null;
+
+function save(){ localStorage.setItem('hr_requests', JSON.stringify(REQUESTS)); }
+function getEmpInfo(name){ return EMPLOYEES.find(e=>e.name===name) || {name,email:''}; }
+
+// ─── AUTH ─────────────────────────────────────────────────────
+// Admin account
+const DEFAULT_PASSWORD = 'password';
+
+// Passwords stored in localStorage so HR can change them later
+// Structure: { email: hashedPassword }  (we use a simple base64 obfuscation — not crypto, but hides plaintext)
+function obfuscate(s){ return btoa(unescape(encodeURIComponent(s))); }
+function deobfuscate(s){ try{ return decodeURIComponent(escape(atob(s))); }catch(e){ return ''; } }
+
+function getPasswords(){
+  return JSON.parse(localStorage.getItem('hr_passwords') || '{}');
+}
+function checkPassword(email, pwd){
+  const db = getPasswords();
+  const key = email.toLowerCase().trim();
+  const stored = db[key];
+  if(stored) return deobfuscate(stored) === pwd;
+  return pwd === DEFAULT_PASSWORD;
+}
+function setPassword(email, pwd){
+  const db = getPasswords();
+  db[email.toLowerCase()] = obfuscate(pwd);
+  localStorage.setItem('hr_passwords', JSON.stringify(db));
+}
+
+function findUserByEmail(email){
+  EMPLOYEES = getEmployees(); // always use latest list
+  const e = (email||'').toLowerCase().trim();
+  if(!e) return null;
+  const emp = EMPLOYEES.find(x => (x.email||'').toLowerCase().trim() === e);
+  if(emp) return { name: emp.name, email: e, isAdmin: emp.isAdmin === true, role: emp.role || 'employee', team: emp.team || null };
+  return null;
+}
+
+function clearAndReload(){
+  if(confirm('Ceci va effacer toutes les données locales (congés, mots de passe, employés ajoutés) et recharger la page. Continuer ?')){
+    localStorage.clear(); sessionStorage.clear(); location.reload();
+  }
+}
+
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pwd   = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-err');
+  const btn   = document.querySelector('.login-btn');
+  errEl.style.display = 'none';
+
+  if(!email || !pwd){
+    errEl.textContent = 'Veuillez renseigner votre email et mot de passe.';
+    errEl.style.display = 'block'; return;
+  }
+  if(!email.endsWith('@advantryx.com')){
+    errEl.textContent = 'Seuls les comptes @advantryx.com sont autorisés.';
+    errEl.style.display = 'block'; return;
+  }
+
+  btn.textContent = 'Connexion…'; btn.disabled = true;
+
+  try {
+    let user;
+    if(USE_GSHEETS){
+      // ── Google Sheets auth ──────────────────────────────
+      try {
+        user = await apiPost({ action:'login', email, password:pwd });
+        // Full sync from Sheets on login
+        const [freshEmps, freshReqs, freshGrades, freshLT, freshPN] = await Promise.all([
+          apiGet('getEmployees'),
+          apiGet('getRequests'),
+          apiGet('getGrades'),
+          apiGet('getLeaveTypes'),
+          apiGet('getPerfNotes'),
+        ]);
+        if(freshEmps)   { saveEmployees(freshEmps); EMPLOYEES = freshEmps; }
+        if(freshReqs && freshReqs.length > 0){
+          REQUESTS = freshReqs; save();
+        } else {
+          // Sheets requests tab is empty — push local/SEED data to Sheets
+          const localReqs = JSON.parse(localStorage.getItem('hr_requests')||'null') || [...SEED];
+          REQUESTS = localReqs; save();
+          // Push all to Sheets in background (don't block login)
+          (async () => {
+            for(const req of localReqs){
+              try{ await apiPost({action:'saveRequest', request:req}); } catch(e){}
+            }
+            console.log('[GS] Pushed', localReqs.length, 'requests to Sheets');
+          })();
+        }
+        if(freshGrades && freshGrades.length > 0){
+          saveJobGrades(freshGrades);
+        } else {
+          // Sheet is empty — push default grades to Sheets
+          const defaultGrades = [...DEFAULT_JOB_GRADES];
+          saveJobGrades(defaultGrades);
+          Promise.all(defaultGrades.map(g => apiPost({action:'saveGrade', grade:g})))
+            .catch(e => console.warn('GS default grades sync:', e));
+        }
+        if(freshLT && freshLT.length > 0){
+          saveLeaveTypes(freshLT);
+        } else {
+          // Sheet is empty — push default leave types to Sheets
+          const defaults = [...DEFAULT_LEAVE_TYPES];
+          saveLeaveTypes(defaults);
+          Promise.all(defaults.map(t => apiPost({action:'saveLeaveType', leaveType:t})))
+            .catch(e => console.warn('GS default leave types sync:', e));
+        }
+        if(freshPN)     { savePerfNotes(freshPN); }
+      } catch(apiErr) {
+        errEl.textContent = apiErr.message;
+        errEl.style.display = 'block'; return;
+      }
+    } else {
+      // ── Local fallback ──────────────────────────────────
+      const found = findUserByEmail(email);
+      if(!found){ errEl.textContent = `Aucun compte trouvé pour ${email}.`; errEl.style.display='block'; return; }
+      if(!checkPassword(email, pwd)){ errEl.textContent = 'Mot de passe incorrect. Défaut : password'; errEl.style.display='block'; return; }
+      user = found;
+    }
+    sessionStorage.setItem('hr_session', JSON.stringify({name:user.name, email:user.email, isAdmin:user.isAdmin, role:user.role||'employee', team:user.team||null}));
+    startSession(user);
+  } finally {
+    btn.textContent = 'Se connecter'; btn.disabled = false;
+  }
+}
+
+function startSession(user){
+  currentUser = (user.isAdmin || user.role === 'team_manager') ? user.name : user.name; // always name, role checked via session
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+
+  // Sidebar user display
+  const col = avatarColor(user.name);
+  // Show Sync button if GSheets connected
+  const syncBtn = document.getElementById('btn-sync');
+  if(syncBtn) syncBtn.style.display = USE_GSHEETS ? '' : 'none';
+  document.getElementById('sidebar-avatar').style.background = col;
+  document.getElementById('sidebar-avatar').textContent = initials(user.name);
+  document.getElementById('sidebar-name').textContent = user.name;
+  // sidebar-role set below with role labels
+
+  // Show/hide nav based on role
+  const isAdmin   = user.isAdmin;
+  const isSuperAdmin = (user.email||'').toLowerCase() === SUPERADMIN_EMAIL;
+  const isManager = user.role === 'team_manager';
+
+  // Role label in sidebar
+  const roleLabels = { superadmin:'👑 Super Admin', team_manager: user.team ? '🏷 Manager ' + (user.team==='textile'?'Textile':'Pharma') : '🏷 Manager', employee:'👤 Employé', comptable:'📊 Expert Comptable' };
+  document.getElementById('sidebar-role').textContent = roleLabels[user.role] || (isAdmin ? '👑 Admin' : '👤 Employé');
+
+  // Approvals + history visible to admins and managers
+  const isComptable = user.role === 'comptable';
+  const canSeeAdmin = isAdmin || isManager;
+  ['nav-dashboard','nav-employees','nav-history','nav-user-mgmt','nav-leave-types','nav-admin-label'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = isSuperAdmin ? '' : 'none';
+  });
+  ['nav-approvals','nav-team-dash','nav-perf'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = canSeeAdmin ? '' : 'none';
+  });
+  // Comptable sees only their dedicated panel
+  const navComptable = document.getElementById('nav-comptable');
+  if(navComptable) navComptable.style.display = (isComptable || isSuperAdmin) ? '' : 'none';
+  if(isComptable){
+    // Hide all other panels nav
+    ['nav-dashboard','nav-approvals','nav-team-dash','nav-perf','nav-employees','nav-history','nav-user-mgmt','nav-leave-types','nav-admin-label'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.style.display='none';
+    });
+  }
+  nav('my-requests');
+}
+
+function doLogout(){
+  sessionStorage.removeItem('hr_session');
+  currentUser = null;
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// ─── AUTO-RESTORE SESSION ─────────────────────────────────────
+(function restoreSession(){
+  const s = sessionStorage.getItem('hr_session');
+  if(s){
+    try{ startSession(JSON.parse(s)); return; }catch(e){}
+  }
+  document.getElementById('login-screen').style.display = 'flex';
+})();
+
+// ─── QUOTA HELPERS ───────────────────────────────────────────
+function accrued(year){
+  const now = new Date();
+  const y = parseInt(year);
+  if(now.getFullYear() > y) return Math.round(QUOTA_PER_MONTH * 12 * 10)/10;
+  if(now.getFullYear() < y) return 0;
+  return Math.round(QUOTA_PER_MONTH * (now.getMonth()+1) * 10)/10;
+}
+
+// Safely parse the days field — handles "1/2", "Half Day", "0,5", numbers, etc.
+function parseDays(val){
+  if(val===null||val===undefined||val==='') return 0;
+  const s=String(val).trim().toLowerCase();
+  if(s==='half day'||s==='half'||s==='1/2') return 0.5;
+  const n=parseFloat(s.replace(',','.'));
+  return isNaN(n)?0:n;
+}
+
+// usedDays: counts ALL accepted leave types by default (pass typesFilter array to restrict)
+function usedDays(emp, year, typesFilter=null){
+  return REQUESTS
+    .filter(r=>r.employee===emp && r.status==='accepted' && r.startDate.startsWith(year) && (!typesFilter || typesFilter.includes(r.type)))
+    .reduce((s,r)=>s+parseDays(r.days),0);
+}
+
+// alias kept for compatibility
+function allUsedDays(emp, year){ return usedDays(emp, year); }
+
+// ─── NAVIGATION ──────────────────────────────────────────────
+function nav(page){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+page).classList.add('active');
+  const btn = document.querySelector(`[onclick="nav('${page}')"]`);
+  if(btn) btn.classList.add('active');
+
+  if(page==='my-requests'){
+    const _s=JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+    if(_s.role==='comptable'){ nav('comptable'); return; }
+    renderMyRequests('all');
+  }
+  if(page==='new-request'){ populateLeaveTypeSelect('f-type'); setupForm(); }
+  if(page==='dashboard'){
+    // Reset year select to current year each time dashboard opens
+    const sel = document.getElementById('dash-year');
+    if(sel) sel.value = new Date().getFullYear().toString();
+    renderDashboard();
+  }
+  if(page==='approvals') renderApprovals();
+  if(page==='employees') renderEmployees();
+  if(page==='history') renderHistory();
+  if(page==='comptable') renderComptable();
+  if(page==='change-password'){ ['pwd-current','pwd-new','pwd-confirm'].forEach(id=>document.getElementById(id).value=''); document.getElementById('pwd-alert').style.display='none'; }
+  if(page==='user-mgmt') renderUserMgmt();
+  if(page==='leave-types') renderLeaveTypes();
+  if(page==='salary-grid') renderSalaryGrid();
+  if(page==='team-dash') renderTeamDash();
+  if(page==='perf') renderPerfPanel();
+  updatePendingBadge();
+}
+
+function updatePendingBadge(){
+  const session = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const n = REQUESTS.filter(r=>r.status==='pending' && canApprove(session, r)).length;
+  document.getElementById('pending-badge').textContent = n;
+  document.getElementById('pending-badge').style.display = n?'':'none';
+}
+
+// ─── TYPE PILL ───────────────────────────────────────────────
+function typePill(t){
+  const ltypes = getLeaveTypes();
+  const def = ltypes.find(x=>x.label===t);
+  const color = def?.color||'#888';
+  const short = t.length>14 ? t.substring(0,13)+'…' : t;
+  return `<span class="pill" style="background:${color}22;color:${color};">${short}</span>`;
+}
+function statusPill(s){
+  const labels={accepted:'Accepted',rejected:'Rejected',pending:'Pending'};
+  return `<span class="pill pill-${s}">${labels[s]||s}</span>`;
+}
+function fmtDate(d){return d?d.substring(0,10):'';}
+
+// ─── MY REQUESTS ─────────────────────────────────────────────
+function renderMyRequests(yr='all'){
+  // Refresh from localStorage in case it was updated
+  const storedReqs = JSON.parse(localStorage.getItem('hr_requests')||'null');
+  if(storedReqs && storedReqs.length > 0 && storedReqs.length !== REQUESTS.length) REQUESTS = storedReqs;
+  const name = currentUser==='admin'?'Adam Bouchaala':currentUser;
+  const myRec = getEmpRecord(name);
+  const teamTag = myRec?.team ? ` <span style="font-size:12px;padding:2px 8px;border-radius:10px;background:${TEAM_COLORS[myRec.team]||'#eee'}22;color:${TEAM_COLORS[myRec.team]||'#888'};font-weight:600;">${TEAM_LABELS[myRec.team]}</span>` : '';
+  document.getElementById('my-title').innerHTML = name + ' — Mes Congés' + teamTag;
+
+  // Quota block — show current year always, or selected year if filtered
+  const quotaYear = (yr==='all') ? new Date().getFullYear().toString() : yr;
+  document.getElementById('my-quota-year').textContent = quotaYear;
+  const used = usedDays(name, quotaYear);   // ALL accepted types, sum of days
+  const acc  = accrued(quotaYear);
+  const rem  = Math.max(0, acc - used);
+  const pct  = acc > 0 ? Math.min(100, used / acc * 100) : 0;
+  document.getElementById('my-quota-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px;">
+      <div><div style="font-size:11px;color:var(--text3)">Acquis (${quotaYear})</div><div style="font-size:22px;font-weight:600;color:var(--blue)">${acc.toFixed(1)}</div><div style="font-size:10px;color:var(--text3)">jours</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">Utilisés (tous types)</div><div style="font-size:22px;font-weight:600;color:var(--amber)">${used.toFixed(1)}</div><div style="font-size:10px;color:var(--text3)">jours</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">Restants</div><div style="font-size:22px;font-weight:600;color:${rem<=0?'var(--red)':rem<2?'var(--amber)':'var(--green)'}">${rem.toFixed(1)}</div><div style="font-size:10px;color:var(--text3)">jours</div></div>
+    </div>
+    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+      <div style="height:100%;border-radius:3px;background:${used>acc?'var(--red)':pct>80?'var(--amber)':'var(--blue)'};width:${pct}%;transition:width 0.5s;"></div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:4px;">${pct.toFixed(0)}% du quota utilisé · 1.83 j/mois × ${quotaYear}</div>`;
+
+  const rows = REQUESTS.filter(r=>r.employee===name && (yr==='all'||r.startDate.startsWith(yr)))
+    .sort((a,b)=>b.startDate.localeCompare(a.startDate));
+
+  document.getElementById('my-tbody').innerHTML = rows.length ? rows.map(r=>`
+    <tr>
+      <td style="font-weight:500;color:var(--blue);font-size:11px;">${r.id}</td>
+      <td>${typePill(r.type)}</td>
+      <td>${fmtDate(r.startDate)}</td>
+      <td>${fmtDate(r.endDate)}</td>
+      <td><strong>${r.days}</strong></td>
+      <td>${statusPill(r.status)}</td>
+      <td style="color:var(--text3);font-size:11px;">${fmtDate(r.submittedAt)}</td>
+      <td style="color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.reason||'—'}</td>
+    </tr>`).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:1.5rem;">No requests found</td></tr>';
+}
+
+// ─── FORM ────────────────────────────────────────────────────
+function setupForm(){
+  populateLeaveTypeSelect('f-type');
+  const name = currentUser;
+  const emp = getEmpInfo(name);
+  document.getElementById('f-name').value = emp.name;
+  document.getElementById('f-email').value = emp.email||'';
+  document.getElementById('form-alert').style.display='none';
+  calcDays();
+}
+
+function calcDays(){
+  const s   = document.getElementById('f-start').value;
+  const e   = document.getElementById('f-end').value;
+  const fmt = document.getElementById('f-dayfmt').value;
+  const typ = document.getElementById('f-type').value;
+  const qEl = document.getElementById('f-quota-check');
+
+  if(!s||!e){ document.getElementById('f-days').value=''; return; }
+
+  // ── Advance notice rule (per leave type, in calendar days) ───────────────
+  const leaveTypeDef = getLeaveTypes().find(t => t.label === typ);
+  const advDays = leaveTypeDef?.advanceDays || 0;
+  if(advDays > 0){
+    const startDate  = new Date(s);
+    startDate.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diffDays   = Math.ceil((startDate - today) / 86400000);
+    if(diffDays < advDays){
+      const deadline = new Date(startDate);
+      deadline.setDate(deadline.getDate() - advDays);
+      const fmt2 = d => d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+      qEl.innerHTML = `<span style="color:var(--red)">⛔ Ce type de congé nécessite <strong>${advDays} jour(s)</strong> d'avance minimum.<br>Date limite de soumission : <strong>${fmt2(deadline)}</strong>.</span>`;
+      document.getElementById('f-days').value = '';
+      return;
+    }
+  }
+
+  const start = new Date(s), end = new Date(e);
+  let days = 0;
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const dw=d.getDay(); if(dw!==0&&dw!==6) days++;
+  }
+  if(fmt==='half-am'||fmt==='half-pm') days=Math.max(0.5,days*0.5);
+  document.getElementById('f-days').value=days;
+
+  // Quota check
+  const name = currentUser;
+  const yr   = s.substring(0,4);
+  const used = usedDays(name, yr);
+  const acc  = accrued(yr);
+  const after= used + days;
+  if(after>acc){
+    qEl.innerHTML=`<span style="color:var(--red)">⚠ Quota dépassé : ${used.toFixed(1)}+${days}=${after.toFixed(1)} vs ${acc.toFixed(1)} acquis</span>`;
+  } else {
+    qEl.innerHTML=`<span style="color:var(--green)">✓ Dans le quota : ${used.toFixed(1)}+${days}=${after.toFixed(1)} / ${acc.toFixed(1)} acquis</span>`;
+  }
+}
+
+function resetForm(){
+  ['f-type','f-start','f-end','f-reason'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-dayfmt').value='full';
+  document.getElementById('f-days').value='';
+  document.getElementById('f-quota-check').innerHTML='Select dates to check';
+  document.getElementById('form-alert').style.display='none';
+}
+
+function genId(){
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const base=`L${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+  const existing=REQUESTS.filter(r=>r.id.startsWith(base)).length;
+  return `${base}-${String(existing+1).padStart(2,'0')}`;
+}
+
+function submitRequest(){
+  const name=document.getElementById('f-name').value;
+  const email=document.getElementById('f-email').value;
+  const type=document.getElementById('f-type').value;
+  const start=document.getElementById('f-start').value;
+  const end=document.getElementById('f-end').value;
+  const dayfmt=document.getElementById('f-dayfmt').value;
+  const days=parseFloat(document.getElementById('f-days').value)||0;
+  const reason=document.getElementById('f-reason').value;
+
+  const alertEl=document.getElementById('form-alert');
+  if(!type||!start||!end||!days){
+    alertEl.className='alert alert-err';alertEl.innerHTML='⚠ Please fill all required fields.';alertEl.style.display='flex';return;
+  }
+  const dayLabels={full:'Full day','half-am':'Half Day – Morning','half-pm':'Half Day – Afternoon'};
+  const req={
+    id:genId(),employee:name,email,type,startDate:start,endDate:end,
+    dayType:dayLabels[dayfmt],days,reason,status:'pending',
+    submittedAt:new Date().toISOString()
+  };
+  REQUESTS.push(req);save();
+  if(USE_GSHEETS){ apiPost({action:'saveRequest',request:req}).catch(e=>console.warn('GS sync:',e)); }
+  alertEl.className='alert alert-success';
+  alertEl.innerHTML=`✅ Request <strong>${req.id}</strong> submitted successfully! Awaiting HR approval.`;
+  alertEl.style.display='flex';
+  resetForm();
+  updatePendingBadge();
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────
+function renderDashboard(){
+  const _sess = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const isSA  = _sess.role === 'superadmin';
+  const yr = document.getElementById('dash-year').value;
+  document.getElementById('quota-year-label').textContent = yr==='all'?'all time':yr;
+  const allReqs = isSA ? REQUESTS : REQUESTS.filter(r => {
+    const emp = getEmployees().find(e => e.name === r.employee);
+    return emp && emp.team === _sess.team;
+  });
+  const filtered = allReqs.filter(r=>yr==='all'||r.startDate.startsWith(yr));
+  const accepted = filtered.filter(r=>r.status==='accepted');
+
+  const totalDays = accepted.reduce((s,r)=>s+parseDays(r.days),0);
+  const pending = REQUESTS.filter(r=>r.status==='pending').length;
+  const annualDays = accepted.filter(r=>r.type==='Paid Leave (Annual)').reduce((s,r)=>s+parseDays(r.days),0);
+  const sickDays = accepted.filter(r=>r.type==='Sick Leave').reduce((s,r)=>s+parseDays(r.days),0);
+
+  document.getElementById('dash-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Total days taken</div><div class="metric-val mv-blue">${totalDays.toFixed(1)}</div><div class="metric-sub">${accepted.length} requests accepted</div></div>
+    <div class="metric"><div class="metric-label">Annual leave</div><div class="metric-val mv-amber">${annualDays.toFixed(1)}</div><div class="metric-sub">days of paid annual</div></div>
+    <div class="metric"><div class="metric-label">Sick leave</div><div class="metric-val mv-purple">${sickDays.toFixed(1)}</div><div class="metric-sub">days sick</div></div>
+    <div class="metric"><div class="metric-label">Pending</div><div class="metric-val mv-red">${pending}</div><div class="metric-sub">awaiting approval</div></div>`;
+
+  // By type
+  const typeMap={};
+  accepted.forEach(r=>{ typeMap[r.type]=(typeMap[r.type]||0)+parseDays(r.days); });
+  const sortedTypes=Object.entries(typeMap).sort((a,b)=>b[1]-a[1]);
+  const maxT=sortedTypes[0]?.[1]||1;
+  const typeColors={'Paid Leave (Annual)':'var(--blue)','Sick Leave':'#9333ea','Unpaid Leave':'#6b7280','Emergency Leave':'#ea580c','Compensatory Off':'#0891b2','Maternity/Paternity Leave':'#db2777'};
+  document.getElementById('dash-by-type').innerHTML=sortedTypes.map(([t,v])=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:11px;width:150px;flex-shrink:0;color:var(--text2);">${t}</span>
+      <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${Math.round(v/maxT*100)}%;background:${typeColors[t]||'var(--blue)'};border-radius:3px;"></div></div>
+      <span style="font-size:11px;color:var(--text2);width:40px;text-align:right;">${v.toFixed(1)}d</span>
+    </div>`).join('');
+
+  // Monthly chart — replace canvas to avoid Chart.js stale state bug
+  const months=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+  const monthData=Array(12).fill(0);
+  accepted.forEach(r=>{
+    const m=parseInt(r.startDate.substring(5,7))-1;
+    if(m>=0 && m<12) monthData[m]+=parseDays(r.days);
+  });
+
+  // Only show months that have data (or all 12 if showing multiple years)
+  let labels, chartData;
+  if(yr!=='all'){
+    // For a single year, only show months up to current month (if current year) or all 12
+    const maxMonth = (yr===new Date().getFullYear().toString()) ? new Date().getMonth() : 11;
+    labels   = months.slice(0, maxMonth+1);
+    chartData = monthData.slice(0, maxMonth+1).map(v=>Math.round(v*10)/10);
+  } else {
+    labels   = months;
+    chartData = monthData.map(v=>Math.round(v*10)/10);
+  }
+
+  // Destroy old chart and replace canvas to avoid ghost rendering
+  if(chartInstance){ chartInstance.destroy(); chartInstance=null; }
+  const wrap = document.getElementById('dash-monthly-chart').parentNode;
+  wrap.innerHTML = '<canvas id="dash-monthly-chart" height="180" role="img" aria-label="Monthly leave days"></canvas>';
+  chartInstance=new Chart(document.getElementById('dash-monthly-chart'),{
+    type:'bar',
+    data:{labels, datasets:[{
+      data: chartData,
+      backgroundColor:'#2563eb',
+      borderRadius:4,
+      borderSkipped:'bottom'   // fix: never skip, but anchor radius to bottom
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+ctx.raw+' j'}}},
+      scales:{
+        x:{ticks:{font:{size:10},color:'#a09f98'},grid:{display:false},border:{display:false}},
+        y:{min:0, ticks:{font:{size:10},color:'#a09f98',callback:v=>v+' j'},grid:{color:'rgba(0,0,0,0.05)'},border:{display:false}}
+      }
+    }
+  });
+
+  // Quota bars — use current year when "all" is selected
+  const empYear = yr==='all' ? new Date().getFullYear().toString() : yr;
+  const acc = accrued(empYear);
+  const _dashEmps = isSA ? getEmployees() : getEmployees().filter(e=>e.team===_sess.team);
+  const quotaRows=_dashEmps.map(e=>{
+    const u=usedDays(e.name,empYear);   // ALL accepted types
+    const pct=acc?Math.min(100,u/acc*100):0;
+    const over=u>acc;
+    const color=over?'var(--red)':pct>80?'var(--amber)':'var(--blue)';
+    return {name:e.name,used:u,acc,pct,over,color};
+  }).filter(e=>e.used>0).sort((a,b)=>b.used-a.used);
+  document.getElementById('dash-quota-bars').innerHTML=quotaRows.map(e=>`
+    <div class="quota-row">
+      <div class="quota-name">${e.name}</div>
+      <div class="quota-bar-wrap"><div class="quota-bar" style="width:${e.pct}%;background:${e.color};"></div></div>
+      <div class="quota-label">${e.used.toFixed(1)} / ${e.acc.toFixed(1)} j</div>
+      ${e.over?`<div class="quota-over">+${(e.used-e.acc).toFixed(1)} DÉPASSÉ</div>`:''}
+    </div>`).join('');
+}
+
+// ─── APPROVALS ───────────────────────────────────────────────
+function renderApprovals(){
+  const session = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const allPending = REQUESTS.filter(r=>r.status==='pending').sort((a,b)=>a.submittedAt.localeCompare(b.submittedAt));
+  // Filter to only requests this user can approve
+  const pending = allPending.filter(r => canApprove(session, r));
+
+  document.getElementById('no-pending').style.display = pending.length ? 'none' : 'block';
+  if(!pending.length){
+    document.getElementById('approvals-tbody').innerHTML='';
+    return;
+  }
+
+  document.getElementById('approvals-tbody').innerHTML = pending.map(r => {
+    const empRec = getEmpRecord(r.employee);
+    const teamLabel = empRec?.team ? `<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${TEAM_COLORS[empRec.team]||'#888'}22;color:${TEAM_COLORS[empRec.team]||'#888'};font-weight:600;">${TEAM_LABELS[empRec.team]||empRec.team}</span>` : '';
+    return `<tr>
+      <td style="font-size:11px;color:var(--blue);font-weight:500;">${r.id}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:${avatarColor(r.employee)};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">${initials(r.employee)}</div>
+          <div><span style="font-weight:500;">${r.employee}</span><br>${teamLabel}</div>
+        </div>
+      </td>
+      <td>${typePill(r.type)}</td>
+      <td>${fmtDate(r.startDate)}</td>
+      <td>${fmtDate(r.endDate)}</td>
+      <td><strong>${r.days}</strong></td>
+      <td style="color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.reason||'—'}</td>
+      <td style="color:var(--text3);font-size:11px;">${fmtDate(r.submittedAt)}</td>
+      <td>
+        <div class="action-group">
+          <button class="btn btn-success btn-sm" onclick="act('${r.id}','accepted')">✓ Accepter</button>
+          <button class="btn btn-danger btn-sm" onclick="act('${r.id}','rejected')">✗ Refuser</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function act(id, status){
+  const r=REQUESTS.find(x=>x.id===id);
+  if(r){r.status=status;r.reviewedAt=new Date().toISOString();save();}
+  if(USE_GSHEETS){
+    apiPost({action:'updateRequest', id, updates:{status, reviewedAt:r?.reviewedAt}})
+      .catch(e=>console.warn('Sheets sync failed:', e));
+  }
+  renderApprovals();updatePendingBadge();
+}
+
+// ─── EMPLOYEES ───────────────────────────────────────────────
+function renderEmployees(){
+  const yr=document.getElementById('emp-year').value;
+  const acc=accrued(yr);
+  document.getElementById('emp-grid').innerHTML=EMPLOYEES.map(e=>{
+    const used = usedDays(e.name, yr);   // ALL accepted types, sum of days field
+    const sick = usedDays(e.name, yr, ['Sick Leave']);
+    const pct  = acc ? Math.min(100, used / acc * 100) : 0;
+    const over = used > acc;
+    const color = over ? 'var(--red)' : pct > 80 ? 'var(--amber)' : 'var(--blue)';
+    return `<div class="emp-card">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="emp-avatar" style="background:${avatarColor(e.name)};color:#fff;">${initials(e.name)}</div>
+        <div>
+          <div class="emp-name">${e.name}</div>
+          <div style="display:flex;align-items:center;gap:4px;margin-top:1px;">
+            ${e.team ? `<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:${TEAM_COLORS[e.team]||'#eee'}22;color:${TEAM_COLORS[e.team]||'#888'};font-weight:600;">${TEAM_LABELS[e.team]||e.team}</span>` : ''}
+          </div>
+          <div class="emp-email">${e.email}</div>
+        </div>
+      </div>
+      <div class="emp-quota-mini">
+        <div class="emp-quota-label">
+          <span>Utilisés: <strong>${used.toFixed(1)}</strong> / ${acc.toFixed(1)} j</span>
+          ${over ? `<span style="color:var(--red);font-weight:600;">⚠ DÉPASSÉ</span>` : `<span style="color:var(--text3)">${(acc-used).toFixed(1)} restants</span>`}
+        </div>
+        <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;border-radius:3px;background:${color};width:${pct}%;transition:width 0.5s;"></div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;">
+        Maladie: <strong>${sick.toFixed(1)}j</strong> · dont ${(used-sick).toFixed(1)}j autres types
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── HISTORY ─────────────────────────────────────────────────
+function renderHistory(){
+  const _sess = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const isSA  = _sess.role === 'superadmin';
+  const q=(document.getElementById('hist-search').value||'').toLowerCase();
+  const st=document.getElementById('hist-status').value;
+  const yr=document.getElementById('hist-year').value;
+  const tp=document.getElementById('hist-type').value;
+
+  const baseReqs = isSA ? REQUESTS : REQUESTS.filter(r => {
+    const emp = getEmployees().find(e => e.name === r.employee);
+    return emp && emp.team === _sess.team;
+  });
+  let rows=[...baseReqs].sort((a,b)=>b.startDate.localeCompare(a.startDate));
+  if(q) rows=rows.filter(r=>r.employee.toLowerCase().includes(q)||r.type.toLowerCase().includes(q)||(r.id||'').toLowerCase().includes(q));
+  if(st) rows=rows.filter(r=>r.status===st);
+  if(yr) rows=rows.filter(r=>r.startDate.startsWith(yr));
+  if(tp) rows=rows.filter(r=>r.type===tp);
+
+  document.getElementById('hist-count').textContent=`${rows.length} request${rows.length!==1?'s':''} shown`;
+  document.getElementById('hist-tbody').innerHTML=rows.length?rows.map(r=>`
+    <tr>
+      <td style="font-size:11px;color:var(--blue);font-weight:500;">${r.id}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:${avatarColor(r.employee)};color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;">${initials(r.employee)}</div>
+          <span>${r.employee}</span>
+        </div>
+      </td>
+      <td>${typePill(r.type)}</td>
+      <td>${fmtDate(r.startDate)}</td>
+      <td>${fmtDate(r.endDate)}</td>
+      <td><strong>${r.days}</strong></td>
+      <td>${statusPill(r.status)}</td>
+      <td style="color:var(--text2);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.reason||'—'}</td>
+      <td style="color:var(--text3);font-size:11px;">${fmtDate(r.submittedAt)}</td>
+      <td>
+        ${r.status==='pending'?`<div class="action-group">
+          <button class="btn btn-success btn-sm" onclick="act('${r.id}','accepted');renderHistory()">✓</button>
+          <button class="btn btn-danger btn-sm" onclick="act('${r.id}','rejected');renderHistory()">✗</button>
+        </div>`:`<button class="btn btn-ghost btn-sm" onclick="openDetail('${r.id}')">View</button>`}
+      </td>
+    </tr>`).join('') : '<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:1.5rem;">No requests match filters</td></tr>';
+}
+
+// ─── MODAL ───────────────────────────────────────────────────
+function openDetail(id){
+  const r=REQUESTS.find(x=>x.id===id);
+  if(!r) return;
+  currentModal=id;
+  document.getElementById('modal-ref').textContent=r.id+' — '+r.employee;
+  document.getElementById('modal-body').innerHTML=`
+    <table style="width:100%;font-size:13px;">
+      <tr><td style="color:var(--text3);padding:6px 0;width:140px;">Type</td><td>${typePill(r.type)}</td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Status</td><td>${statusPill(r.status)}</td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Start date</td><td>${fmtDate(r.startDate)}</td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">End date</td><td>${fmtDate(r.endDate)}</td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Day format</td><td>${r.dayType||'—'}</td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Days requested</td><td><strong>${r.days}</strong></td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Reason</td><td>${r.reason||'—'}</td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Submitted</td><td>${r.submittedAt?r.submittedAt.substring(0,16).replace('T',' '):''}</td></tr>
+      ${r.reviewedAt?`<tr><td style="color:var(--text3);padding:6px 0;">Reviewed</td><td>${r.reviewedAt.substring(0,16).replace('T',' ')}</td></tr>`:''}
+    </table>
+    <div style="margin-top:1rem;font-size:12px;color:var(--text3);">
+      Quota ${r.startDate.substring(0,4)} — Utilisés (tous types) : ${usedDays(r.employee,r.startDate.substring(0,4)).toFixed(1)} j / ${accrued(r.startDate.substring(0,4)).toFixed(1)} j acquis
+    </div>`;
+  const isPending=r.status==='pending';
+  document.getElementById('modal-accept').style.display=isPending&&currentUser==='admin'?'':'none';
+  document.getElementById('modal-reject').style.display=isPending&&currentUser==='admin'?'':'none';
+  document.getElementById('detail-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('detail-modal').classList.remove('open');currentModal=null;}
+function modalAction(status){
+  if(!currentModal) return;
+  act(currentModal,status);
+  closeModal();renderHistory();
+}
+document.getElementById('detail-modal').addEventListener('click',e=>{if(e.target===document.getElementById('detail-modal'))closeModal();});
+
+
+// ─── USER MANAGEMENT ─────────────────────────────────────────
+function toggleTeamField(){
+  const role = document.getElementById('um-role')?.value;
+  const grp  = document.getElementById('um-team-group');
+  if(grp) grp.style.display = (role === 'employee' || role === 'team_manager') ? '' : 'none';
+}
+
+function renderUserMgmt(){
+  EMPLOYEES = getEmployees();
+  const q = (document.getElementById('um-search')?.value || '').toLowerCase();
+  const rows = EMPLOYEES.filter(e =>
+    e.name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q)
+  );
+  document.getElementById('um-count').textContent = `(${EMPLOYEES.length} utilisateurs)`;
+  const session = JSON.parse(sessionStorage.getItem('hr_session') || '{}');
+  const roleOptions = (cur, disabled) => ['employee','team_manager','superadmin'].map(v =>
+    `<option value="${v}" ${cur===v?'selected':''}>${{employee:'👤 Employé',team_manager:'🏷 Manager',superadmin:'👑 Super Admin'}[v]}</option>`
+  ).join('');
+  const teamOptions = (cur, disabled) => ['','textile','pharma'].map(v =>
+    `<option value="${v}" ${cur===v?'selected':''}>${{'':"— Aucune —",textile:"🧵 Textile",pharma:"💊 Pharma"}[v]}</option>`
+  ).join('');
+
+  document.getElementById('um-tbody').innerHTML = rows.map(e => {
+    const realIdx = EMPLOYEES.indexOf(e);
+    const isSelf  = e.email.toLowerCase() === (session.email||'').toLowerCase();
+    const pwSet   = !!JSON.parse(localStorage.getItem('hr_passwords')||'{}')[e.email.toLowerCase()];
+    const teamBadge = e.team
+      ? `<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${TEAM_COLORS[e.team]||'#eee'}22;color:${TEAM_COLORS[e.team]||'#888'};font-weight:600;">${TEAM_LABELS[e.team]||e.team}</span>`
+      : '<span style="font-size:10px;color:var(--text3);">—</span>';
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:${avatarColor(e.name)};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">${initials(e.name)}</div>
+          <span style="font-weight:500;">${e.name}</span>
+          ${isSelf?'<span style="font-size:10px;color:var(--blue);margin-left:4px;">(vous)</span>':''}
+        </div>
+      </td>
+      <td style="color:var(--text2);font-size:12px;">${e.email}</td>
+      <td>${teamBadge}</td>
+      <td>
+        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+          <select onchange="changeRole(${realIdx},this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;background:var(--surface2);" ${isSelf?'disabled':''}>
+            ${roleOptions(e.role||'employee', isSelf)}
+          </select>
+          <select onchange="changeTeam(${realIdx},this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;background:var(--surface2);" ${isSelf?'disabled':''}>
+            ${teamOptions(e.team||'', isSelf)}
+          </select>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:11px;color:${pwSet?'var(--green)':'var(--text3)'};">${pwSet?'✓ Personnalisé':'Par défaut'}</span>
+          <button class="btn btn-ghost btn-sm" onclick="resetUserPassword('${e.email}','${e.name}')">Réinitialiser</button>
+        </div>
+      </td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="removeUser(${realIdx},'${e.name}')" ${isSelf?'disabled':''}>🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function addUser(){
+  EMPLOYEES = getEmployees();
+  const name  = document.getElementById('um-name').value.trim();
+  const email = document.getElementById('um-email').value.trim().toLowerCase();
+  const role  = document.getElementById('um-role').value;
+  const pwd   = document.getElementById('um-password').value.trim();
+  const al    = document.getElementById('um-alert');
+  const team  = document.getElementById('um-team').value || null;
+
+  const showA = (msg, type) => { al.className='alert alert-'+type; al.innerHTML=msg; al.style.display='flex'; };
+
+  if(!name || !email){ showA('Nom et email obligatoires.','err'); return; }
+  if(!email.endsWith('@advantryx.com')){ showA("L'email doit être @advantryx.com.",'err'); return; }
+  if(EMPLOYEES.find(e=>e.email.toLowerCase()===email)){ showA(`Compte déjà existant pour <strong>${email}</strong>.`,'err'); return; }
+
+  const isAdmin = (role === 'team_manager' || role === 'superadmin');
+  const newEmp  = {
+    name, email, isAdmin, role, team,
+    dob:'', startDate:'', cin:'', salary:'',
+    gradeId:'', priorExpYears:0, education:'', experience:'', cinFile:null
+  };
+
+  // ── Save to Google Sheets first (if connected) ──────────────
+  if(USE_GSHEETS){
+    setLoading(true);
+    try {
+      await apiPost({action:'saveEmployee', employee:newEmp});
+      if(pwd){
+        const r2 = await apiPost({action:'changePassword', email, current:'password', newPassword:pwd});
+        if(!r2.ok) console.warn('Password set failed:', r2.error);
+      }
+    } catch(e) {
+      setLoading(false);
+      showA(`❌ Erreur Google Sheets : <strong>${e.message}</strong><br><small>Ouvrez la console (F12) pour voir la réponse brute. Vérifiez aussi Apps Script → Exécutions pour les logs.</small>`,'err');
+      return; // Don't save locally if Sheets failed
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── Save locally ─────────────────────────────────────────────
+  EMPLOYEES.push(newEmp);
+  saveEmployees(EMPLOYEES);
+  if(pwd && !USE_GSHEETS) setPassword(email, pwd);
+
+  // Clear form
+  ['um-name','um-email','um-password'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('um-role').value='employee';
+  document.getElementById('um-team').value='';
+
+  const roleLabel = {employee:'Employé', team_manager:'Manager', superadmin:'Super Admin'};
+  showA(`✅ <strong>${name}</strong> ajouté(e) en tant que ${roleLabel[role]||role}${USE_GSHEETS?' et synchronisé dans Google Sheets':' (local uniquement)'}.`,'success');
+  renderUserMgmt();
+}
+
+async function removeUser(idx, name){
+  if(!confirm(`Supprimer le compte de ${name} ? Cette action est irréversible.`)) return;
+  EMPLOYEES = getEmployees();
+  const removedEmail = EMPLOYEES[idx]?.email;
+  if(USE_GSHEETS && removedEmail){
+    setLoading(true);
+    try {
+      await apiPost({action:'deleteEmployee', email:removedEmail});
+    } catch(e) {
+      setLoading(false);
+      const al=document.getElementById('um-alert');
+      al.className='alert alert-err'; al.innerHTML=`❌ GSheets: ${e.message}`; al.style.display='flex';
+      return;
+    } finally { setLoading(false); }
+  }
+  EMPLOYEES.splice(idx, 1);
+  saveEmployees(EMPLOYEES);
+  // Re-fetch from Sheets to ensure UI is in sync
+  if(USE_GSHEETS){
+    apiGet('getEmployees').then(fresh=>{ if(fresh&&fresh.length>0){ EMPLOYEES=fresh; saveEmployees(fresh); } renderUserMgmt(); }).catch(()=>renderUserMgmt());
+  } else {
+    renderUserMgmt();
+  }
+  const al=document.getElementById('um-alert');
+  al.className='alert alert-warn'; al.innerHTML=`⚠ Compte de <strong>${name}</strong> supprimé.`; al.style.display='flex';
+}
+
+async function changeRole(idx, role){
+  EMPLOYEES = getEmployees();
+  EMPLOYEES[idx].role    = role;
+  EMPLOYEES[idx].isAdmin = (role === 'team_manager' || role === 'superadmin');
+  const emp = EMPLOYEES[idx];
+  const al  = document.getElementById('um-alert');
+  if(USE_GSHEETS){
+    setLoading(true);
+    try {
+      await apiPost({action:'saveEmployee', employee:emp});
+    } catch(e) {
+      setLoading(false);
+      al.className='alert alert-err'; al.innerHTML=`❌ GSheets: ${e.message}`; al.style.display='flex';
+      return;
+    } finally { setLoading(false); }
+  }
+  saveEmployees(EMPLOYEES);
+  const labels = {superadmin:'👑 Super Admin', team_manager:'🏷 Manager', employee:'👤 Employé'};
+  al.className='alert alert-success';
+  al.innerHTML=`✅ Rôle de <strong>${emp.name}</strong> : ${labels[role]||role}.`;
+  al.style.display='flex';
+}
+
+function changeTeam(idx, team){
+  EMPLOYEES = getEmployees();
+  EMPLOYEES[idx].team = team || null;
+  saveEmployees(EMPLOYEES);
+  if(USE_GSHEETS){
+    const emp = EMPLOYEES[idx];
+    apiPost({action:'saveEmployee', employee:{...emp}})
+      .catch(e=>console.warn('Sheets sync:', e));
+  }
+  const al = document.getElementById('um-alert');
+  al.className='alert alert-success';
+  al.innerHTML=`✅ Équipe de <strong>${EMPLOYEES[idx].name}</strong> mise à jour : ${team ? TEAM_LABELS[team] : 'Aucune'}.`;
+  al.style.display='flex';
+}
+
+async function resetUserPassword(email, name){
+  if(!confirm(`Réinitialiser le mot de passe de ${name} au mot de passe par défaut ?`)) return;
+  if(USE_GSHEETS){
+    setLoading(true);
+    try {
+      const r = await apiPost({action:'resetPassword', email});
+      if(!r.ok) throw new Error(r.error);
+    } catch(e) {
+      setLoading(false);
+      const al=document.getElementById('um-alert');
+      al.className='alert alert-err'; al.innerHTML=`❌ GSheets: ${e.message}`; al.style.display='flex';
+      return;
+    } finally { setLoading(false); }
+  }
+  const db=getPasswords(); delete db[email.toLowerCase()]; localStorage.setItem('hr_passwords',JSON.stringify(db));
+  const al=document.getElementById('um-alert');
+  al.className='alert alert-success';
+  al.innerHTML=`✅ Mot de passe de <strong>${name}</strong> réinitialisé (<em>password</em>).`;
+  al.style.display='flex';
+  renderUserMgmt();
+}
+
+
+
+
+// ─── SALARY GRID CONSTANTS ────────────────────────────────────
+const DEFAULT_JOB_GRADES = [
+  {id:"g1", label:"G1 — Technicien / Support",         base:800},
+  {id:"g2", label:"G2 — Assistant / Opérateur",        base:1100},
+  {id:"g3", label:"G3 — Ingénieur / Dev Senior",       base:1500},
+  {id:"g4", label:"G4 — Lead / Chef de projet",        base:2000},
+  {id:"g5", label:"G5 — Manager / Directeur",          base:2800},
+];
+const SENIORITY_BRACKETS = [
+  {min:0,  max:1,  coeff:1.00, label:"< 1 an"},
+  {min:1,  max:3,  coeff:1.08, label:"1–3 ans"},
+  {min:3,  max:5,  coeff:1.18, label:"3–5 ans"},
+  {min:5,  max:10, coeff:1.30, label:"5–10 ans"},
+  {min:10, max:99, coeff:1.45, label:"10+ ans"},
+];
+const PERFORMANCE_LEVELS = [
+  {rating:1, label:"⭐ Insuffisant",    multiplier:0.90},
+  {rating:2, label:"⭐⭐ En progrès",   multiplier:0.97},
+  {rating:3, label:"⭐⭐⭐ Satisfaisant",multiplier:1.00},
+  {rating:4, label:"⭐⭐⭐⭐ Bien",      multiplier:1.06},
+  {rating:5, label:"⭐⭐⭐⭐⭐ Excellent",multiplier:1.15},
+];
+function getJobGrades(){const s=localStorage.getItem("hr_grades");try{return JSON.parse(s)||[...DEFAULT_JOB_GRADES];}catch(e){return[...DEFAULT_JOB_GRADES];}}
+function saveJobGrades(a){localStorage.setItem("hr_grades",JSON.stringify(a));}
+function seniorityCoeff(yrs){const b=SENIORITY_BRACKETS.slice().reverse().find(b=>yrs>=b.min);return b?b.coeff:1.0;}
+function seniorityBracket(yrs){return SENIORITY_BRACKETS.slice().reverse().find(b=>yrs>=b.min)||SENIORITY_BRACKETS[0];}
+
+// ─── SALARY GRID ADMIN ────────────────────────────────────────
+function renderSalaryGrid(){
+  const grades = getJobGrades();
+
+  // ── Grades list ──────────────────────────────────────────────
+  document.getElementById('sg-grades-list').innerHTML = grades.length
+    ? grades.map((g,i) => `
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+          <span style="flex:1;font-size:13px;font-weight:500;">${g.label}</span>
+          <span style="font-size:13px;color:var(--blue);font-weight:600;">${g.base.toLocaleString('fr-TN')} TND</span>
+          <button class="btn btn-ghost btn-sm" onclick="editGradeBase(${i})">✎</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteJobGrade(${i})">🗑</button>
+        </div>`).join('')
+    : '<div style="color:var(--text3);font-size:12px;padding:8px;">Aucun grade configuré.</div>';
+
+  // ── Populate simulator grade select ──────────────────────────
+  const simSel = document.getElementById('sim-grade-sel');
+  if(simSel){
+    simSel.innerHTML = '<option value="">Sélectionner un grade…</option>' +
+      grades.map(g => `<option value="${g.id}">${g.label} — base ${g.base.toLocaleString('fr-TN')} TND</option>`).join('');
+  }
+  runSimulator();
+
+  // ── Seniority reference table ─────────────────────────────────
+  document.getElementById('sg-seniority-table').innerHTML =
+    '<table style="width:100%;font-size:12px;"><thead><tr><th>Expérience totale</th><th>Coefficient</th><th>Effet</th></tr></thead><tbody>' +
+    SENIORITY_BRACKETS.map(b =>
+      `<tr><td style="padding:6px 8px;">${b.label}</td><td style="padding:6px 8px;font-weight:600;">×${b.coeff}</td><td style="padding:6px 8px;color:var(--text2);">${b.coeff>=1?'+':''}${Math.round((b.coeff-1)*100)}%</td></tr>`
+    ).join('') + '</tbody></table>';
+
+  // ── Performance reference ─────────────────────────────────────
+  document.getElementById('sg-perf-levels').innerHTML =
+    '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;">' +
+    PERFORMANCE_LEVELS.map(p => {
+      const stars = '⭐'.repeat(p.rating);
+      const label = p.label.replace(/^⭐+\s*/, '');
+      const col = p.multiplier >= 1 ? 'var(--green)' : 'var(--red)';
+      return `<div style="text-align:center;padding:10px 6px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface2);">
+        <div style="font-size:16px;">${stars}</div>
+        <div style="font-size:10px;font-weight:600;margin-top:3px;">${label}</div>
+        <div style="font-size:14px;font-weight:700;color:${col};">×${p.multiplier}</div>
+        <div style="font-size:10px;color:var(--text3);">${p.multiplier>=1?'+':''}${Math.round((p.multiplier-1)*100)}%</div>
+      </div>`;
+    }).join('') + '</div>' +
+    `<div style="font-size:12px;color:var(--text2);padding:8px;background:var(--amber-bg);border-radius:var(--rs);border:1px solid #fde68a;">
+      💡 La performance détermine le <strong>13ème salaire</strong> uniquement (seuil : ${PERF_THRESHOLD}/5). Le salaire théorique = Grade × Ancienneté.
+    </div>`;
+
+  // ── Full simulation table: grades × seniority brackets ────────
+  if(!grades.length){
+    document.getElementById('sg-simulation-table').innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px;">Ajoutez des grades pour voir le tableau.</div>';
+    return;
+  }
+  document.getElementById('sg-simulation-table').innerHTML =
+    '<table style="font-size:12px;width:100%;border-collapse:collapse;"><thead><tr>' +
+    '<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);">Grade</th>' +
+    SENIORITY_BRACKETS.map(b => `<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border);background:var(--surface2);">${b.label}</th>`).join('') +
+    '</tr></thead><tbody>' +
+    grades.map(g =>
+      '<tr><td style="padding:7px 10px;font-weight:600;border-bottom:1px solid var(--border);">' + g.label + '</td>' +
+      SENIORITY_BRACKETS.map(b =>
+        `<td style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border);font-weight:500;">${Math.round(g.base*b.coeff).toLocaleString('fr-TN')} TND</td>`
+      ).join('') + '</tr>'
+    ).join('') +
+    '</tbody></table>';
+}
+
+
+
+function runSimulator(){
+  const gradeId = document.getElementById('sim-grade-sel')?.value;
+  const exp = parseFloat(document.getElementById('sim-exp')?.value)||0;
+  const perf = parseFloat(document.getElementById('sim-perf')?.value)||3;
+  const el = document.getElementById('sim-result');
+  if(!el) return;
+  if(!gradeId){el.style.display='none';return;}
+  const grades = getJobGrades();
+  const grade = grades.find(g=>g.id===gradeId);
+  if(!grade){el.style.display='none';return;}
+  const sc = seniorityCoeff(exp);
+  const brkt = seniorityBracket(exp);
+  const th = Math.round(grade.base * sc);
+  const perfLevel = PERFORMANCE_LEVELS.reduce((p,c)=>Math.abs(c.rating-perf)<Math.abs(p.rating-perf)?c:p,PERFORMANCE_LEVELS[0]);
+  const is13Full = perf >= PERF_THRESHOLD;
+  const th13 = is13Full ? th : Math.round(th * 0.5);
+  el.style.display='block';
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">
+      <div><div style="font-size:10px;color:var(--blue-t);margin-bottom:2px;">Base grade</div><div style="font-size:18px;font-weight:700;">${grade.base.toLocaleString('fr-TN')} TND</div></div>
+      <div><div style="font-size:10px;color:var(--blue-t);margin-bottom:2px;">Ancienneté (${exp} ans)</div><div style="font-size:18px;font-weight:700;">×${sc}</div><div style="font-size:10px;color:var(--text3);">${brkt.label}</div></div>
+      <div><div style="font-size:10px;color:var(--blue-t);margin-bottom:2px;">Performance (${perf}/5)</div><div style="font-size:18px;font-weight:700;color:${is13Full?'var(--green)':'var(--amber)'};">${perfLevel.label.replace(/⭐+\s*/,'')}</div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid #bfdbfe;">
+      <div>
+        <div style="font-size:11px;color:var(--blue-t);">Salaire mensuel théorique</div>
+        <div style="font-size:24px;font-weight:700;color:var(--blue);">${th.toLocaleString('fr-TN')} TND</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:${is13Full?'var(--green-t)':'var(--amber-t)'};">${is13Full?'✅ 13ème complet (×1)':'⚠ 13ème 50% minimum'}</div>
+        <div style="font-size:20px;font-weight:700;color:${is13Full?'var(--green)':'var(--amber)'};">${th13.toLocaleString('fr-TN')} TND</div>
+        <div style="font-size:10px;color:var(--text3);">13ème salaire estimé</div>
+      </div>
+    </div>`;
+}
+
+function addJobGrade(){
+  const label = document.getElementById('sg-grade-label').value.trim();
+  const base  = parseInt(document.getElementById('sg-grade-base').value)||0;
+  const al    = document.getElementById('sg-alert');
+  if(!label||!base){ al.className='alert alert-err'; al.innerHTML='Libellé et salaire de base requis.'; al.style.display='flex'; return; }
+  const grades = getJobGrades();
+  const id = 'g'+(Date.now()%10000);
+  grades.push({id, label, base});
+  saveJobGrades(grades);
+  document.getElementById('sg-grade-label').value='';
+  document.getElementById('sg-grade-base').value='';
+  al.className='alert alert-success'; al.innerHTML=`✅ Grade "<strong>${label}</strong>" ajouté.`; al.style.display='flex';
+  renderSalaryGrid();
+}
+
+function editGradeBase(idx){
+  const grades = getJobGrades();
+  const newBase = prompt(`Nouveau salaire de base pour "${grades[idx].label}" (TND):`, grades[idx].base);
+  if(newBase===null) return;
+  const v = parseInt(newBase);
+  if(!v||v<0){ alert('Valeur invalide'); return; }
+  grades[idx].base = v;
+  saveJobGrades(grades);
+  renderSalaryGrid();
+}
+
+function deleteJobGrade(idx){
+  const grades = getJobGrades();
+  if(!confirm(`Supprimer le grade "${grades[idx].label}" ?`)) return;
+  grades.splice(idx,1);
+  saveJobGrades(grades);
+  renderSalaryGrid();
+}
+
+
+
+// ─── PERFORMANCE DATA STORE ───────────────────────────────────
+// Notes stored as flat object: { "email::YYYY-MM": {score, comment, reviewer, ts} }
+const PERF_THRESHOLD = 3.0;
+
+function getPerfNotes(){
+  try { return JSON.parse(localStorage.getItem('hr_perf')||'{}'); }
+  catch(e){ return {}; }
+}
+function savePerfNotes(obj){
+  localStorage.setItem('hr_perf', JSON.stringify(obj));
+}
+function getPerfKey(email, yearMonth){
+  return (email||'').toLowerCase()+'::'+yearMonth;
+}
+function setMonthlyNote(email, yearMonth, score, comment, reviewer){
+  const notes = getPerfNotes();
+  notes[getPerfKey(email, yearMonth)] = {
+    score: parseFloat(score), comment: comment||'', reviewer: reviewer||'',
+    ts: new Date().toISOString()
+  };
+  savePerfNotes(notes);
+}
+function getMonthlyNote(email, yearMonth){
+  return getPerfNotes()[getPerfKey(email, yearMonth)] || null;
+}
+function getYearlyNotes(email, year){
+  const all = getPerfNotes();
+  const res = {};
+  const prefix = (email||'').toLowerCase()+'::'+year+'-';
+  for(const k of Object.keys(all)){
+    if(k.startsWith(prefix)){ res[k.split('::')[1]] = all[k]; }
+  }
+  return res; // { "2025-01": {score,comment,...}, ... }
+}
+function calcYearlyAverage(email, year){
+  const notes  = getYearlyNotes(email, year);
+  const scores = Object.values(notes).map(n=>n.score).filter(s=>!isNaN(s)&&s>0);
+  return scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : null;
+}
+function calc13th(emp, year){
+  const avg  = calcYearlyAverage(emp.email, year);
+  const base = parseFloat(emp.salary) || (emp.gradeId ? (() => {
+    const gr = getJobGrades().find(g=>g.id===emp.gradeId);
+    if(!gr) return 0;
+    const prior = parseFloat(emp.priorExpYears)||0;
+    const atCo  = emp.startDate ? Math.max(0,(new Date()-new Date(emp.startDate))/(365.25*86400000)) : 0;
+    return Math.round(gr.base * seniorityCoeff(atCo+prior));
+  })() : 0);
+  const notedMonths = Object.keys(getYearlyNotes(emp.email, year)).length;
+  if(!base)    return { base, avg, notedMonths, amount:0,              full:false, reason:'Salaire non défini' };
+  if(avg===null) return { base, avg, notedMonths, amount:Math.round(base*0.5), full:false, reason:'Aucune note — minimum 50%' };
+  if(avg >= PERF_THRESHOLD) return { base, avg, notedMonths, amount:base,              full:true,  reason:`Moy. ${avg.toFixed(2)} ≥ ${PERF_THRESHOLD}` };
+  return                          { base, avg, notedMonths, amount:Math.round(base*0.5), full:false, reason:`Moy. ${avg.toFixed(2)} < ${PERF_THRESHOLD} — 50%` };
+}
+
+// ─── PERFORMANCE NOTES PANEL ──────────────────────────────────
+const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Août','Sep','Oct','Nov','Déc'];
+
+function renderPerfPanel(){
+  const session     = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const isSuperAdmin= (session.email||'').toLowerCase() === SUPERADMIN_EMAIL;
+  const year        = document.getElementById('perf-year')?.value || '2026';
+  const teamFilter  = document.getElementById('perf-team-filter')?.value || '';
+
+  // Filter employees visible to this reviewer
+  let members = getEmployees().filter(e => e.role === 'employee' || e.role === 'team_manager');
+  if(!isSuperAdmin) members = members.filter(e => e.team === session.team);
+  if(teamFilter)    members = members.filter(e => e.team === teamFilter);
+
+  // Show/hide team filter for superadmin only
+  const tf = document.getElementById('perf-team-filter');
+  if(tf) tf.style.display = isSuperAdmin ? '' : 'none';
+
+  // ── Scoring grid ───────────────────────────────────────────────
+  const currentMonth = `${year}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+
+  let gridHtml = `<table style="font-size:12px;width:100%;border-collapse:collapse;">
+    <thead><tr>
+      <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);min-width:140px;">Employé</th>
+      ${MONTHS_FR.map((m,i)=>{
+        const ym = `${year}-${String(i+1).padStart(2,'0')}`;
+        const isNow = ym === currentMonth;
+        return `<th style="padding:5px 4px;border-bottom:1px solid var(--border);text-align:center;${isNow?'background:var(--blue-bg);color:var(--blue);':''}">${m}</th>`;
+      }).join('')}
+      <th style="padding:6px 8px;border-bottom:1px solid var(--border);text-align:center;color:var(--amber);">Moy.</th>
+    </tr></thead>
+    <tbody>`;
+
+  members.forEach(emp => {
+    const yearNotes = getYearlyNotes(emp.email, year);
+    const scores    = [];
+    gridHtml += `<tr>
+      <td style="padding:6px 8px;border-bottom:1px solid var(--border);font-weight:500;">${emp.name}
+        <div style="font-size:10px;color:var(--text3);">${emp.team?TEAM_LABELS[emp.team]:''}</div>
+      </td>`;
+
+    MONTHS_FR.forEach((m,i) => {
+      const ym   = `${year}-${String(i+1).padStart(2,'0')}`;
+      const note = yearNotes[ym];
+      const s    = note?.score;
+      if(s) scores.push(s);
+      const bg   = s ? (s>=4?'#dcfce7':s>=3?'#fefce8':s>=2?'#fff7ed':'#fef2f2') : 'transparent';
+      const col  = s ? (s>=4?'#15803d':s>=3?'#a16207':s>=2?'#c2410c':'#991b1b') : 'var(--text3)';
+      const isNow = ym === currentMonth;
+      gridHtml += `<td style="padding:4px;border-bottom:1px solid var(--border);text-align:center;${isNow?'background:var(--blue-bg)80;':''}">
+        <div onclick="openScoreCell('${emp.email}','${emp.name}','${ym}')" title="${note?.comment||'Cliquer pour noter'}"
+          style="width:32px;height:28px;margin:auto;border-radius:4px;background:${bg};color:${col};
+                 display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
+                 cursor:pointer;border:1px solid ${s?'transparent':'var(--border2)'};">
+          ${s||'+'}</div>
+      </td>`;
+    });
+
+    const avg = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2) : '—';
+    const avgNum = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : null;
+    const avgColor = avgNum===null?'var(--text3)':avgNum>=PERF_THRESHOLD?'var(--green)':'var(--red)';
+    gridHtml += `<td style="padding:6px 4px;border-bottom:1px solid var(--border);text-align:center;font-weight:700;color:${avgColor};">${avg}</td></tr>`;
+  });
+
+  gridHtml += '</tbody></table>';
+  document.getElementById('perf-grid-wrap').innerHTML = gridHtml;
+
+  // ── 13th salary summary ──────────────────────────────────────
+  document.getElementById('perf-13th-tbody').innerHTML = members.map(emp=>{
+    const res  = calc13thSalary(emp, year);
+    const pill = res.full
+      ? `<span class="pill pill-accepted">13ème complet</span>`
+      : `<span class="pill pill-pending">50% minimum</span>`;
+    const stars = res.avg !== null
+      ? '★'.repeat(Math.round(res.avg||0)) + '☆'.repeat(5-Math.round(res.avg||0))
+      : '—';
+    return `<tr>
+      <td style="font-weight:500;">${emp.name}</td>
+      <td>${emp.team?`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${TEAM_COLORS[emp.team]||'#eee'}22;color:${TEAM_COLORS[emp.team]||'#888'};font-weight:600;">${TEAM_LABELS[emp.team]}</span>`:'-'}</td>
+      <td style="font-size:12px;">${res.base?res.base+' TND':'—'}</td>
+      <td style="font-size:13px;letter-spacing:1px;color:${res.avg>=PERF_THRESHOLD?'var(--green)':'var(--amber)'};">${stars} <span style="font-size:11px;">${res.avg!==null?res.avg.toFixed(2):'—'}</span></td>
+      <td style="font-weight:700;color:${res.full?'var(--green)':'var(--amber)'};">${res.amount?res.amount+' TND':'—'}</td>
+      <td style="font-size:11px;color:var(--text2);">${res.reason}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Modal to enter a monthly score
+let _scoreCell = null;
+function openScoreCell(email, name, yearMonth){
+  _scoreCell = {email, yearMonth};
+  const existing = getMonthlyNote(email, yearMonth);
+  const score    = existing?.score || '';
+  const comment  = existing?.comment || '';
+  const [y,m]    = yearMonth.split('-');
+  const monthName = MONTHS_FR[parseInt(m)-1] + ' ' + y;
+
+  const modal = document.getElementById('score-modal');
+  document.getElementById('score-modal-title').textContent = `Note de ${name} — ${monthName}`;
+  document.getElementById('score-val').value   = score;
+  document.getElementById('score-comment').value = comment;
+  document.getElementById('score-alert').style.display='none';
+  renderScoreStars(score);
+  modal.classList.add('open');
+}
+
+function renderScoreStars(val){
+  const v = parseInt(val)||0;
+  const labels={1:'Insuffisant',2:'En progrès',3:'Satisfaisant',4:'Bien',5:'Excellent'};
+  document.getElementById('score-stars-row').innerHTML = [1,2,3,4,5].map(n=>`
+    <button onclick="selectScore(${n})" style="font-size:28px;background:none;border:none;cursor:pointer;opacity:${n<=v?1:0.25};transform:scale(${n<=v?1:0.9});transition:all 0.15s;">⭐</button>
+  `).join('') + (v?`<div style="font-size:12px;color:var(--text2);margin-top:4px;">${v}/5 — ${labels[v]||''}</div>`:'');
+}
+
+function selectScore(n){
+  document.getElementById('score-val').value = n;
+  renderScoreStars(n);
+}
+
+function saveScore(){
+  if(!_scoreCell) return;
+  const score   = parseFloat(document.getElementById('score-val').value);
+  const comment = document.getElementById('score-comment').value.trim();
+  const al      = document.getElementById('score-alert');
+  if(!score||score<1||score>5){ al.className='alert alert-err'; al.innerHTML='Note entre 1 et 5 requise.'; al.style.display='flex'; return; }
+  const session = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  setMonthlyNote(_scoreCell.email, _scoreCell.yearMonth, score, comment, session.email);
+  document.getElementById('score-modal').classList.remove('open');
+  renderPerfPanel();
+}
+
+function deleteScore(){
+  if(!_scoreCell) return;
+  if(!confirm('Supprimer cette note ?')) return;
+  const notes = getPerfNotes();
+  delete notes[getPerfKey(_scoreCell.email, _scoreCell.yearMonth)];
+  savePerfNotes(notes);
+  document.getElementById('score-modal').classList.remove('open');
+  renderPerfPanel();
+}
+
+// ─── LEAVE TYPES MANAGEMENT ──────────────────────────────────
+function renderLeaveTypes(){
+  const types = getLeaveTypes();
+  const al = document.getElementById('lt-alert');
+
+  document.getElementById('lt-list').innerHTML = types.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="width:14px;height:14px;border-radius:3px;background:${t.color};flex-shrink:0;display:inline-block;"></span>
+      <span style="flex:1;font-weight:500;font-size:13px;">${t.label}</span>
+      <span class="pill ${t.paid?'pill-accepted':'pill-unpaid'}" style="flex-shrink:0;">${t.paid?'Payé':'Non payé'}</span>
+      <span style="font-size:11px;color:var(--text3);flex-shrink:0;">${t.advanceDays>0?`⏰ ${t.advanceDays}j avant`:''}</span>
+      <button class="btn btn-danger btn-sm" onclick="deleteLeaveType(${i})" style="flex-shrink:0;">🗑</button>
+    </div>`).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px 0;">Aucun type configuré.</div>';
+}
+
+function addLeaveType(){
+  const label   = document.getElementById('lt-label').value.trim();
+  const color   = document.getElementById('lt-color').value;
+  const paid    = document.getElementById('lt-paid').value === 'true';
+  const advance = parseInt(document.getElementById('lt-advance').value) || 0;
+  const al = document.getElementById('lt-alert');
+  if(!label){ al.className='alert alert-err'; al.innerHTML='Libellé obligatoire.'; al.style.display='flex'; return; }
+  const types = getLeaveTypes();
+  if(types.find(t=>t.label.toLowerCase()===label.toLowerCase())){ al.className='alert alert-err'; al.innerHTML='Ce type existe déjà.'; al.style.display='flex'; return; }
+  const id = label.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')+'-'+Date.now();
+  const newType = {id, label, color, paid, advanceDays: advance};
+  types.push(newType);
+  saveLeaveTypes(types);
+  if(USE_GSHEETS){
+    apiPost({action:'saveLeaveType', leaveType:newType})
+      .catch(e=>{ al.className='alert alert-warn'; al.innerHTML='⚠ Sauvegardé localement mais erreur GSheets: '+e.message; al.style.display='flex'; });
+  }
+  document.getElementById('lt-label').value='';
+  al.className='alert alert-success'; al.innerHTML=`✅ Type "<strong>${label}</strong>" ajouté${USE_GSHEETS?' et synchronisé':' (local)'}.`; al.style.display='flex';
+  renderLeaveTypes();
+}
+
+async function deleteLeaveType(idx){
+  const types = getLeaveTypes();
+  if(!confirm(`Supprimer le type "${types[idx]?.label}" ?`)) return;
+  const delId = types[idx].id;
+  if(USE_GSHEETS){
+    try {
+      const r = await apiPost({action:'deleteLeaveType', id:delId});
+      if(!r && r !== null) throw new Error('No response');
+    } catch(e){ console.warn('GS deleteLeaveType:', e.message); }
+  }
+  types.splice(idx,1);
+  saveLeaveTypes(types);
+  renderLeaveTypes();
+}
+
+// ─── TEAM DASHBOARD ───────────────────────────────────────────
+function renderTeamDash(){
+  const _sess  = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const yr     = document.getElementById('td-year')?.value || String(new Date().getFullYear());
+  const isSA   = (_sess.role||'') === 'superadmin';
+  const tf     = document.getElementById('td-team-filter')?.value || '';
+
+  let members = getEmployees();
+  if(!isSA)  members = members.filter(e => e.team === _sess.team);
+  if(tf)     members = members.filter(e => e.team === tf);
+
+  document.getElementById('td-title').textContent = isSA
+    ? 'Team Dashboard — Toutes les équipes'
+    : 'Mon équipe — ' + (TEAM_LABELS[_sess.team] || '');
+  const tfEl = document.getElementById('td-team-filter');
+  if(tfEl) tfEl.style.display = isSA ? '' : 'none';
+
+  const acc       = accrued(yr);
+  const teamReqs  = REQUESTS.filter(r => r.status === 'accepted' && r.startDate.startsWith(yr) && members.find(e => e.name === r.employee));
+  const totalDays = teamReqs.reduce((s,r) => s + parseDays(r.days), 0);
+  const pending   = REQUESTS.filter(r => r.status === 'pending' && members.find(e => e.name === r.employee)).length;
+  const over      = members.filter(e => usedDays(e.name, yr) > acc).length;
+
+  document.getElementById('td-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Membres</div><div class="metric-val mv-blue">${members.length}</div></div>
+    <div class="metric"><div class="metric-label">Jours pris ${yr}</div><div class="metric-val mv-amber">${totalDays.toFixed(1)}</div></div>
+    <div class="metric"><div class="metric-label">En attente</div><div class="metric-val mv-purple">${pending}</div></div>
+    <div class="metric"><div class="metric-label">Quota dépassé</div><div class="metric-val mv-red">${over}</div></div>`;
+
+  // Quota bars
+  document.getElementById('td-quota-bars').innerHTML = members.map(e => {
+    const u   = usedDays(e.name, yr);
+    const pct = acc ? Math.min(100, u / acc * 100) : 0;
+    const ov  = u > acc;
+    const col = ov ? 'var(--red)' : pct > 80 ? 'var(--amber)' : 'var(--blue)';
+    return `<div class="quota-row">
+      <div class="quota-name" style="cursor:pointer;" onclick="openProfile('${e.email}')">${e.name}</div>
+      <div class="quota-bar-wrap"><div class="quota-bar" style="width:${pct.toFixed(0)}%;background:${col};"></div></div>
+      <div class="quota-label">${u.toFixed(1)} / ${acc.toFixed(1)} j</div>
+      ${ov ? '<span style="font-size:10px;color:var(--red);font-weight:700;flex-shrink:0;">⚠</span>' : ''}
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px;">Aucun membre.</div>';
+
+  // By type
+  const typeMap = {};
+  teamReqs.forEach(r => { typeMap[r.type] = (typeMap[r.type]||0) + parseDays(r.days); });
+  const maxT = Math.max(...Object.values(typeMap), 1);
+  const lt   = getLeaveTypes();
+  document.getElementById('td-by-type').innerHTML = Object.entries(typeMap).sort((a,b)=>b[1]-a[1]).map(([t,v]) => {
+    const col = lt.find(x => x.label === t)?.color || '#888';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:11px;flex:1;color:var(--text2);">${t}</span>
+      <div style="width:100px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${Math.round(v/maxT*100)}%;background:${col};border-radius:3px;"></div></div>
+      <span style="font-size:11px;color:var(--text2);width:36px;text-align:right;">${v.toFixed(1)}j</span>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px;">Aucun congé.</div>';
+
+  // Members table
+  const canFin = (_sess.role === 'superadmin' || _sess.role === 'team_manager');
+  const grades = getJobGrades();
+  document.getElementById('td-members-tbody').innerHTML = members.length ? members.map(e => {
+    const used = usedDays(e.name, yr);
+    const prior = parseFloat(e.priorExpYears)||0;
+    const atCo  = e.startDate ? Math.max(0,(new Date()-new Date(e.startDate))/(365.25*86400000)) : 0;
+    const totYrs = atCo + prior;
+    const sc    = seniorityCoeff(totYrs);
+    const gr    = grades.find(g => g.id === e.gradeId);
+    const th    = gr ? Math.round(gr.base * sc) : null;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:26px;height:26px;border-radius:50%;background:${avatarColor(e.name)};color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;">${initials(e.name)}</div>
+        <span style="font-weight:500;">${e.name}</span>
+      </div></td>
+      <td>${e.team ? `<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${TEAM_COLORS[e.team]||'#eee'}22;color:${TEAM_COLORS[e.team]||'#888'};font-weight:600;">${TEAM_LABELS[e.team]||e.team}</span>` : '—'}</td>
+      <td style="font-size:11px;color:var(--text2);">${gr ? gr.label : '—'}</td>
+      <td style="font-size:11px;color:var(--text2);">${e.startDate||'—'}</td>
+      <td style="font-size:12px;">${canFin && e.cin ? e.cin : (e.cin?'••••':'—')}</td>
+      <td style="font-size:12px;">${canFin ? (() => {
+        const realSal = e.salary ? parseInt(e.salary) : null;
+        const parts = [];
+        if(realSal) parts.push(`<span style="font-weight:600;">${realSal.toLocaleString('fr-TN')} TND</span>`);
+        if(th && !realSal) parts.push(`<span style="color:var(--blue);">${th.toLocaleString('fr-TN')} TND</span> <span style="font-size:10px;color:var(--text3);">(théorique)</span>`);
+        if(th && realSal) parts.push(`<span style="font-size:10px;color:var(--text3);">(grille: ${th.toLocaleString('fr-TN')})</span>`);
+        return parts.join(' ') || '—';
+      })() : (e.salary||e.gradeId?'••••':'—')}</td>
+      <td><strong>${used.toFixed(1)}</strong> j</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openProfile('${e.email}')">👤 Profil</button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:1.5rem;">Aucun membre.</td></tr>';
+
+  // Recent requests
+  const recent = REQUESTS.filter(r => members.find(e => e.name === r.employee))
+    .sort((a,b) => b.submittedAt.localeCompare(a.submittedAt)).slice(0,20);
+  document.getElementById('td-requests-tbody').innerHTML = recent.length ? recent.map(r => `<tr>
+    <td style="font-size:11px;color:var(--blue);">${r.id}</td>
+    <td style="font-weight:500;">${r.employee}</td>
+    <td>${typePill(r.type)}</td>
+    <td style="font-size:11px;">${fmtDate(r.startDate)} → ${fmtDate(r.endDate)}</td>
+    <td><strong>${r.days}</strong></td>
+    <td>${statusPill(r.status)}</td>
+  </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:1.5rem;">Aucune demande.</td></tr>';
+}
+// ─── EMPLOYEE PROFILE ─────────────────────────────────────────
+let currentProfileEmail = null;
+
+function openProfile(email, mode){
+  const session = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const isSuperAdmin = (session.email||'').toLowerCase() === SUPERADMIN_EMAIL;
+  const isManager = session.role === 'team_manager';
+  const canSeeFinancial = isSuperAdmin || isManager;
+
+  const emp = email ? getEmployees().find(e=>e.email.toLowerCase()===email.toLowerCase()) : null;
+  currentProfileEmail = email;
+
+  document.getElementById('profile-modal-title').textContent = emp ? `👤 Profil — ${emp.name}` : 'Profil employé';
+  document.getElementById('profile-alert').style.display = 'none';
+
+  // Determine if financial fields are shown
+  const fin = canSeeFinancial ? '' : 'display:none';
+
+  document.getElementById('profile-form-grid').innerHTML = `
+    <div class="form-group"><label>Date de naissance</label><input type="date" id="pf-dob" value="${emp?.dob||''}"></div>
+    <div class="form-group"><label>Date d'embauche</label><input type="date" id="pf-startDate" value="${emp?.startDate||''}" onchange="updateSalaryPreview()"></div>
+    <div class="form-group"><label>N° CIN</label><input type="text" id="pf-cin" placeholder="Ex: 12345678" value="${emp?.cin||''}"></div>
+    <div class="form-group" style="${fin}"><label>Salaire (TND/mois)</label><input type="number" id="pf-salary" placeholder="Ex: 1800" value="${emp?.salary||''}"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Formation / Diplômes</label><textarea id="pf-education" rows="2" placeholder="Ex: Licence en informatique, ISET 2018…">${emp?.education||''}</textarea></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Expériences professionnelles</label><textarea id="pf-experience" rows="3" placeholder="Ex: 2019–2022 TechCorp — Développeur…">${emp?.experience||''}</textarea></div>
+    <div class="form-group" style="grid-column:1/-1">
+      <label>Copie CIN (PDF / Image)</label>
+      ${emp?.cinFile ? `<div style="margin-bottom:6px;"><a href="${emp.cinFile}" download="CIN_${emp.name.replace(/\s/g,'_')}" style="color:var(--blue);font-size:12px;">📎 Fichier existant — Télécharger</a></div>` : ''}
+      <input type="file" id="pf-cinFile" accept=".pdf,image/*" style="font-size:12px;">
+    </div>`;
+
+  document.getElementById('profile-modal').classList.add('open');
+  setTimeout(updateSalaryPreview, 50);
+}
+
+
+function updateSalaryPreview(){
+  const gradeId    = document.getElementById('pf-gradeId')?.value;
+  const startDt    = document.getElementById('pf-startDate')?.value;
+  const priorYrs   = parseFloat(document.getElementById('pf-priorExpYears')?.value)||0;
+  const override   = document.getElementById('pf-salary')?.value;
+  const el         = document.getElementById('pf-salary-preview');
+  if(!el) return;
+
+  if(!gradeId){ el.innerHTML='<span style="color:var(--text3)">Sélectionnez un grade pour voir le salaire théorique.</span>'; return; }
+
+  const companyYrs = yearsAtCompany(startDt);
+  const totalYrs   = companyYrs + priorYrs;
+  const theor      = calcTheoreticalSalary(gradeId, totalYrs);
+  const sc         = getSeniorityCoeff(totalYrs);
+  const grades     = getJobGrades();
+  const grade      = grades.find(g=>g.id===gradeId);
+  const senBrkt    = SENIORITY_BRACKETS.slice().reverse().find(b=>totalYrs>=b.minYears);
+  const realSal    = parseFloat(override)||0;
+  const diff       = realSal && theor ? realSal - theor : 0;
+  const diffStr    = realSal && theor ? (diff>=0
+    ? `<span style="color:var(--green)">+${diff} TND au-dessus de la grille</span>`
+    : `<span style="color:var(--red)">${diff} TND en-dessous de la grille</span>`) : '';
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div><div style="font-size:10px;color:var(--text3);">Base grade</div><div style="font-weight:600;">${grade.base} TND</div></div>
+      <div>
+        <div style="font-size:10px;color:var(--text3);">Expérience totale</div>
+        <div style="font-weight:600;">${totalYrs.toFixed(1)} ans ×${sc}</div>
+        <div style="font-size:10px;color:var(--text3);">${companyYrs.toFixed(1)} entreprise + ${priorYrs} antérieure · ${senBrkt?.label||''}</div>
+      </div>
+      <div><div style="font-size:10px;color:var(--text3);">Palier</div><div style="font-weight:600;">${senBrkt?.label||'—'}</div></div>
+    </div>
+    <div style="font-size:15px;font-weight:700;color:var(--blue);">Salaire théorique : ${theor} TND/mois</div>
+    ${diffStr ? '<div style="font-size:11px;margin-top:4px;">'+diffStr+'</div>' : ''}`;
+}
+
+function closeProfile(){
+  document.getElementById('profile-modal').classList.remove('open');
+  currentProfileEmail = null;
+}
+
+async function saveProfile(){
+  const al = document.getElementById('profile-alert');
+  const show = (msg,t)=>{ al.className='alert alert-'+t; al.innerHTML=msg; al.style.display='flex'; };
+  const EMPS = getEmployees();
+  const idx  = currentProfileEmail ? EMPS.findIndex(e=>e.email.toLowerCase()===currentProfileEmail.toLowerCase()) : -1;
+  if(idx===-1){ show('Employé introuvable.','err'); return; }
+
+  // Handle file upload → base64
+  const fileInput = document.getElementById('pf-cinFile');
+  let cinFile = EMPS[idx].cinFile || null;
+  if(fileInput.files[0]){
+    cinFile = await new Promise(res=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result);
+      r.readAsDataURL(fileInput.files[0]);
+    });
+  }
+
+  EMPS[idx] = {
+    ...EMPS[idx],
+    dob        : document.getElementById('pf-dob').value,
+    startDate  : document.getElementById('pf-startDate').value,
+    cin        : document.getElementById('pf-cin').value.trim(),
+    gradeId       : document.getElementById('pf-gradeId')?.value || '',
+    priorExpYears : parseFloat(document.getElementById('pf-priorExpYears')?.value)||0,
+    salary     : document.getElementById('pf-salary')?.value   || '',
+    education  : document.getElementById('pf-education').value.trim(),
+    experience : document.getElementById('pf-experience').value.trim(),
+    cinFile,
+  };
+  saveEmployees(EMPS);
+  EMPLOYEES = EMPS;
+  if(USE_GSHEETS){ apiPost({action:'saveEmployee',employee:EMPS[idx]}).catch(e=>console.warn('GS sync:',e)); }
+  show('✅ Profil enregistré avec succès.','success');
+  setTimeout(()=>{ closeProfile(); renderTeamDash(); }, 1200);
+}
+
+
+// ─── COMPTABLE PANEL ─────────────────────────────────────────
+let cptChart = null;
+
+function renderComptable(){
+  const yr    = document.getElementById('cpt-year')?.value  || '2026';
+  const mo    = document.getElementById('cpt-month')?.value || 'all';
+  const team  = document.getElementById('cpt-team')?.value  || '';
+  const emps  = getEmployees();
+
+  document.getElementById('cpt-chart-yr').textContent = yr;
+  document.getElementById('cpt-table-title').textContent =
+    mo === 'all' ? `Récapitulatif annuel ${yr}` : `Récapitulatif — ${['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'][parseInt(mo)]} ${yr}`;
+
+  // Filter requests
+  const filtReqs = REQUESTS.filter(r => {
+    if(r.status !== 'accepted') return false;
+    if(!r.startDate.startsWith(yr)) return false;
+    if(mo !== 'all' && r.startDate.substring(5,7) !== mo) return false;
+    if(team){
+      const emp = emps.find(e => e.name === r.employee);
+      if(!emp || emp.team !== team) return false;
+    }
+    return true;
+  });
+
+  // Get filtered employee list
+  let filtEmps = emps.filter(e => e.role !== 'comptable');
+  if(team) filtEmps = filtEmps.filter(e => e.team === team);
+
+  const lt = getLeaveTypes();
+  const paidTypes = lt.filter(t => t.paid).map(t => t.label);
+
+  // Per-employee stats
+  const empStats = filtEmps.map(emp => {
+    const reqs = filtReqs.filter(r => r.employee === emp.name);
+    const byType = {};
+    lt.forEach(t => { byType[t.label] = 0; });
+    reqs.forEach(r => { byType[r.type] = (byType[r.type]||0) + parseDays(r.days); });
+    const total   = reqs.reduce((s,r) => s + parseDays(r.days), 0);
+    const paid    = reqs.filter(r => paidTypes.includes(r.type)).reduce((s,r) => s + parseDays(r.days), 0);
+    const unpaid  = total - paid;
+    return { emp, byType, total, paid, unpaid, reqs };
+  }).filter(s => s.total > 0 || mo === 'all');
+
+  // KPIs
+  const totalDays  = filtReqs.reduce((s,r) => s + parseDays(r.days), 0);
+  const totalPaid  = filtReqs.filter(r => paidTypes.includes(r.type)).reduce((s,r) => s + parseDays(r.days), 0);
+  const totalUnpaid= totalDays - totalPaid;
+  const absEmps    = new Set(filtReqs.map(r => r.employee)).size;
+
+  document.getElementById('cpt-metrics').innerHTML = `
+    <div class="metric"><div class="metric-lbl">Total jours d'absence</div><div class="metric-val mv-blue">${totalDays.toFixed(1)}</div><div class="metric-sub">${filtReqs.length} demandes</div></div>
+    <div class="metric"><div class="metric-lbl">Jours payés</div><div class="metric-val mv-green">${totalPaid.toFixed(1)}</div><div class="metric-sub">congés rémunérés</div></div>
+    <div class="metric"><div class="metric-lbl">Jours non payés</div><div class="metric-val mv-red">${totalUnpaid.toFixed(1)}</div><div class="metric-sub">à déduire du salaire</div></div>
+    <div class="metric"><div class="metric-lbl">Employés concernés</div><div class="metric-val mv-amber">${absEmps}</div><div class="metric-sub">sur ${filtEmps.length} actifs</div></div>`;
+
+  // Main table
+  const typeKeys = ['Paid Leave (Annual)','Sick Leave','Emergency Leave','Unpaid Leave','Compensatory Off','Other'];
+  const typeLabels = {'Paid Leave (Annual)':'Annuel','Sick Leave':'Maladie','Emergency Leave':'Urgence','Unpaid Leave':'Non payé','Compensatory Off':'Comp.','Other':'Autre'};
+
+  document.getElementById('cpt-tbody').innerHTML = empStats.map(s => {
+    const teamBadgeHtml = s.emp.team
+      ? `<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${TEAM_COLORS[s.emp.team]||'#eee'}22;color:${TEAM_COLORS[s.emp.team]||'#888'};font-weight:600;">${TEAM_LABELS[s.emp.team]}</span>`
+      : '—';
+    return `<tr>
+      <td style="font-weight:500;">${s.emp.name}</td>
+      <td>${teamBadgeHtml}</td>
+      ${typeKeys.map(t => `<td style="text-align:center;">${s.byType[t]>0?s.byType[t].toFixed(1):'—'}</td>`).join('')}
+      <td style="text-align:center;font-weight:700;color:var(--blue);">${s.total.toFixed(1)}</td>
+      <td style="text-align:center;font-weight:600;color:var(--green);">${s.paid.toFixed(1)}</td>
+      <td style="text-align:center;font-weight:600;color:var(--red);">${s.unpaid>0?s.unpaid.toFixed(1):'—'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:1.5rem;">Aucune absence sur la période.</td></tr>';
+
+  // Totals footer
+  const totByType = {};
+  typeKeys.forEach(t => { totByType[t] = empStats.reduce((s,e) => s+(e.byType[t]||0), 0); });
+  document.getElementById('cpt-tfoot').innerHTML = `<tr style="background:var(--surface2);">
+    <td colspan="2" style="padding:8px 10px;">TOTAL</td>
+    ${typeKeys.map(t => `<td style="text-align:center;padding:8px 10px;">${totByType[t]>0?totByType[t].toFixed(1):'—'}</td>`).join('')}
+    <td style="text-align:center;padding:8px 10px;color:var(--blue);">${totalDays.toFixed(1)}</td>
+    <td style="text-align:center;padding:8px 10px;color:var(--green);">${totalPaid.toFixed(1)}</td>
+    <td style="text-align:center;padding:8px 10px;color:var(--red);">${totalUnpaid>0?totalUnpaid.toFixed(1):'—'}</td>
+  </tr>`;
+
+  // Monthly chart (only when showing full year)
+  renderCptChart(yr, team);
+
+  // By type breakdown
+  const typeMap = {};
+  filtReqs.forEach(r => { typeMap[r.type] = (typeMap[r.type]||0) + parseDays(r.days); });
+  const maxT = Math.max(...Object.values(typeMap), 1);
+  document.getElementById('cpt-by-type').innerHTML = Object.entries(typeMap).sort((a,b)=>b[1]-a[1]).map(([t,v]) => {
+    const def = lt.find(x=>x.label===t);
+    const col = def?.color||'#888';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:11px;flex:1;color:var(--text2);">${t}${!def?.paid?' <span style="font-size:9px;color:var(--red);">(non payé)</span>':''}</span>
+      <div style="width:100px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${Math.round(v/maxT*100)}%;background:${col};border-radius:3px;"></div></div>
+      <span style="font-size:11px;min-width:40px;text-align:right;font-weight:600;">${v.toFixed(1)} j</span>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px;">Aucune donnée.</div>';
+
+  // Top absences
+  const topEmps = [...empStats].sort((a,b)=>b.total-a.total).slice(0,8);
+  const maxE = topEmps[0]?.total || 1;
+  document.getElementById('cpt-top-emp').innerHTML = topEmps.map((s,i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:11px;color:var(--text3);width:16px;">${i+1}</span>
+      <span style="flex:1;font-size:12px;font-weight:500;">${s.emp.name}</span>
+      <div style="width:80px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${Math.round(s.total/maxE*100)}%;background:var(--blue);border-radius:3px;"></div></div>
+      <span style="font-size:11px;min-width:36px;text-align:right;font-weight:600;">${s.total.toFixed(1)} j</span>
+      ${s.unpaid>0?`<span style="font-size:9px;color:var(--red);">-${s.unpaid.toFixed(1)}j NP</span>`:''}
+    </div>`).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px;">Aucune donnée.</div>';
+}
+
+function renderCptChart(yr, team){
+  const emps = getEmployees();
+  const mData = Array(12).fill(0);
+  const mPaid = Array(12).fill(0);
+  const lt    = getLeaveTypes();
+  const paidTypes = lt.filter(t=>t.paid).map(t=>t.label);
+
+  REQUESTS.filter(r => {
+    if(r.status!=='accepted'||!r.startDate.startsWith(yr)) return false;
+    if(team){ const e=emps.find(x=>x.name===r.employee); if(!e||e.team!==team) return false; }
+    return true;
+  }).forEach(r => {
+    const m = parseInt(r.startDate.substring(5,7))-1;
+    if(m>=0&&m<12){
+      mData[m] += parseDays(r.days);
+      if(paidTypes.includes(r.type)) mPaid[m] += parseDays(r.days);
+    }
+  });
+
+  if(cptChart){ cptChart.destroy(); cptChart=null; }
+  const wrap = document.getElementById('cpt-chart').parentNode;
+  wrap.innerHTML = '<canvas id="cpt-chart" style="max-height:220px;"></canvas>';
+  const MONTHS_SHORT=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  cptChart = new Chart(document.getElementById('cpt-chart'),{
+    type:'bar',
+    data:{
+      labels:MONTHS_SHORT,
+      datasets:[
+        {label:'Jours payés',  data:mPaid.map(v=>Math.round(v*10)/10), backgroundColor:'#16a34a', borderRadius:3, borderSkipped:'bottom'},
+        {label:'Jours non payés', data:mData.map((v,i)=>Math.round((v-mPaid[i])*10)/10), backgroundColor:'#dc2626', borderRadius:3, borderSkipped:'bottom'},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}},
+               tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.raw+' j'}}},
+      scales:{
+        x:{stacked:true,ticks:{font:{size:10},color:'#a09f98'},grid:{display:false},border:{display:false}},
+        y:{stacked:true,min:0,ticks:{font:{size:10},color:'#a09f98',callback:v=>v+'j'},grid:{color:'rgba(0,0,0,0.05)'},border:{display:false}}
+      }
+    }
+  });
+}
+
+function exportCptCSV(){
+  var yr   = document.getElementById('cpt-year')&&document.getElementById('cpt-year').value||'2026';
+  var mo   = document.getElementById('cpt-month')&&document.getElementById('cpt-month').value||'all';
+  var team = document.getElementById('cpt-team')&&document.getElementById('cpt-team').value||'';
+  var emps = getEmployees();
+  var lt   = getLeaveTypes();
+  var paidTypes = lt.filter(function(t){return t.paid;}).map(function(t){return t.label;});
+  var filtReqs = REQUESTS.filter(function(r){
+    if(r.status!=='accepted'||!r.startDate.startsWith(yr)) return false;
+    if(mo!=='all'&&r.startDate.substring(5,7)!==mo) return false;
+    if(team){ var e=emps.find(function(x){return x.name===r.employee;}); if(!e||e.team!==team) return false; }
+    return true;
+  });
+  var headers = ['Employe','Equipe','Reference','Type','Date debut','Date fin','Jours','Paye','Soumis le'];
+  var lines = [headers.join(';')];
+  filtReqs.sort(function(a,b){return a.employee.localeCompare(b.employee)||a.startDate.localeCompare(b.startDate);})
+    .forEach(function(r){
+      var emp = emps.find(function(e){return e.name===r.employee;});
+      lines.push([
+        r.employee, emp&&emp.team||'', r.id, r.type,
+        r.startDate, r.endDate, r.days,
+        paidTypes.indexOf(r.type)>=0?'Oui':'Non',
+        r.submittedAt?r.submittedAt.substring(0,10):''
+      ].join(';'));
+    });
+  var csv = lines.join('\n');
+  var blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'conges_'+yr+(mo!=='all'?'_'+mo:'')+'.csv';
+  a.click();
+}
+
+// ─── CHANGE PASSWORD ─────────────────────────────────────────
+function changePassword(){
+  const session = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const email = session.email;
+  const cur = document.getElementById('pwd-current').value;
+  const nw  = document.getElementById('pwd-new').value;
+  const cnf = document.getElementById('pwd-confirm').value;
+  const al  = document.getElementById('pwd-alert');
+
+  const show = (msg, type) => {
+    al.className = 'alert alert-' + type;
+    al.innerHTML = msg;
+    al.style.display = 'flex';
+  };
+
+  if(!checkPassword(email, cur)){ show('Mot de passe actuel incorrect.','err'); return; }
+  if(nw.length < 6){ show('Le nouveau mot de passe doit contenir au moins 6 caractères.','warn'); return; }
+  if(nw !== cnf){ show('Les deux mots de passe ne correspondent pas.','err'); return; }
+
+  setPassword(email, nw);
+  if(USE_GSHEETS){
+    apiPost({action:'changePassword', email, current:cur, newPassword:nw})
+      .catch(e=>console.warn('Sheets pwd sync:', e));
+  }
+  show('✅ Mot de passe modifié avec succès !','success');
+  ['pwd-current','pwd-new','pwd-confirm'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ─── SYNC FROM SHEETS ────────────────────────────────────────
+async function syncFromSheets(){
+  if(!USE_GSHEETS){ alert('Google Sheets non configuré.'); return; }
+  setLoading(true);
+  try {
+    const [emps, reqs, grades, lt, pn] = await Promise.all([
+      apiGet('getEmployees'),
+      apiGet('getRequests'),
+      apiGet('getGrades'),
+      apiGet('getLeaveTypes'),
+      apiGet('getPerfNotes'),
+    ]);
+    if(emps && emps.length > 0){ EMPLOYEES = emps; saveEmployees(emps); }
+    if(reqs)   { REQUESTS = reqs; save(); }
+    if(grades && grades.length > 0){
+      saveJobGrades(grades);
+    } else {
+      const defs = [...DEFAULT_JOB_GRADES];
+      saveJobGrades(defs);
+      Promise.all(defs.map(g => apiPost({action:'saveGrade', grade:g})))
+        .catch(e => console.warn('GS sync default grades:', e));
+    }
+    if(lt && lt.length > 0){
+      saveLeaveTypes(lt);
+    } else {
+      const defs = [...DEFAULT_LEAVE_TYPES];
+      saveLeaveTypes(defs);
+      Promise.all(defs.map(t => apiPost({action:'saveLeaveType', leaveType:t})))
+        .catch(e => console.warn('GS sync default LT:', e));
+    }
+    if(pn)     { savePerfNotes(pn); }
+    // Re-render current panel
+    const active = document.querySelector('.panel.active');
+    if(active) nav(active.id.replace('panel-',''));
+    const btn = document.getElementById('btn-sync');
+    if(btn){ btn.textContent='✓ Synchronisé'; setTimeout(()=>btn.textContent='🔄 Sync Sheets',2000); }
+  } catch(e){
+    alert('Erreur de synchronisation: '+e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ─── INIT (session restored above) ──────────────────────────
+updatePendingBadge();
+</script>
+</body>
+</html>
