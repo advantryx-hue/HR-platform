@@ -205,7 +205,7 @@ textarea{resize:vertical;min-height:80px;}
   <div class="login-box">
     <div class="login-logo">
       <div class="login-logo-badge">AdvantryX</div>
-      <h1>HR Leave Platform</h1>
+      <h1>HR Platform</h1>
       <p>Connectez-vous avec votre email professionnel</p>
     </div>
     <div class="login-err" id="login-err">Email ou mot de passe incorrect.</div>
@@ -232,7 +232,7 @@ textarea{resize:vertical;min-height:80px;}
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-title">AdvantryX</div>
-    <div class="logo-sub">HR Leave Platform</div>
+    <div class="logo-sub">HR Platform</div>
   </div>
   <div class="sidebar-user-info">
     <div class="user-info-row">
@@ -1078,12 +1078,23 @@ const SEED = [
 ];
 
 // ─── STATE ───────────────────────────────────────────────────
-let REQUESTS = JSON.parse(localStorage.getItem('hr_requests') || 'null') || [...SEED];
+let REQUESTS = JSON.parse(localStorage.getItem('hr_requests') || 'null') || [];
 let currentUser = null; // name string or 'admin'
 let currentModal = null;
 let chartInstance = null;
 
-function save(){ localStorage.setItem('hr_requests', JSON.stringify(REQUESTS)); }
+function normalizeReqs(arr){
+  return (arr||[]).map(r=>({...r,
+    status:(r.status||'pending').toLowerCase().trim(),
+    days:parseFloat(String(r.days||0).replace(',','.'))||0,
+    startDate:r.startDate?String(r.startDate).substring(0,10):'',
+    endDate:r.endDate?String(r.endDate).substring(0,10):'',
+  }));
+}
+function save(){
+  REQUESTS=normalizeReqs(REQUESTS);
+  localStorage.setItem('hr_requests',JSON.stringify(REQUESTS));
+}
 function getEmpInfo(name){ return EMPLOYEES.find(e=>e.name===name) || {name,email:''}; }
 
 // ─── AUTH ─────────────────────────────────────────────────────
@@ -1160,18 +1171,11 @@ async function doLogin(){
         ]);
         if(freshEmps)   { saveEmployees(freshEmps); EMPLOYEES = freshEmps; }
         if(freshReqs && freshReqs.length > 0){
-          REQUESTS = freshReqs; save();
+          REQUESTS = normalizeReqs(freshReqs);
+          save();
         } else {
-          // Sheets requests tab is empty — push local/SEED data to Sheets
-          const localReqs = JSON.parse(localStorage.getItem('hr_requests')||'null') || [...SEED];
-          REQUESTS = localReqs; save();
-          // Push all to Sheets in background (don't block login)
-          (async () => {
-            for(const req of localReqs){
-              try{ await apiPost({action:'saveRequest', request:req}); } catch(e){}
-            }
-            console.log('[GS] Pushed', localReqs.length, 'requests to Sheets');
-          })();
+          REQUESTS = [];
+          save();
         }
         if(freshGrades && freshGrades.length > 0){
           saveJobGrades(freshGrades);
@@ -1296,7 +1300,7 @@ function parseDays(val){
 // usedDays: counts ALL accepted leave types by default (pass typesFilter array to restrict)
 function usedDays(emp, year, typesFilter=null){
   return REQUESTS
-    .filter(r=>r.employee===emp && r.status==='accepted' && r.startDate.startsWith(year) && (!typesFilter || typesFilter.includes(r.type)))
+    .filter(r=>r.employee===emp && (r.status||'').toLowerCase()==='accepted' && r.startDate.startsWith(year) && (!typesFilter || typesFilter.includes(r.type)))
     .reduce((s,r)=>s+parseDays(r.days),0);
 }
 
@@ -1338,7 +1342,7 @@ function nav(page){
 
 function updatePendingBadge(){
   const session = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
-  const n = REQUESTS.filter(r=>r.status==='pending' && canApprove(session, r)).length;
+  const n = REQUESTS.filter(r=>(r.status||'').toLowerCase()==='pending' && canApprove(session, r)).length;
   document.getElementById('pending-badge').textContent = n;
   document.getElementById('pending-badge').style.display = n?'':'none';
 }
@@ -1360,8 +1364,7 @@ function fmtDate(d){return d?d.substring(0,10):'';}
 // ─── MY REQUESTS ─────────────────────────────────────────────
 function renderMyRequests(yr='all'){
   // Refresh from localStorage in case it was updated
-  const storedReqs = JSON.parse(localStorage.getItem('hr_requests')||'null');
-  if(storedReqs && storedReqs.length > 0 && storedReqs.length !== REQUESTS.length) REQUESTS = storedReqs;
+  REQUESTS = normalizeReqs(JSON.parse(localStorage.getItem('hr_requests')||'[]'));
   const name = currentUser==='admin'?'Adam Bouchaala':currentUser;
   const myRec = getEmpRecord(name);
   const teamTag = myRec?.team ? ` <span style="font-size:12px;padding:2px 8px;border-radius:10px;background:${TEAM_COLORS[myRec.team]||'#eee'}22;color:${TEAM_COLORS[myRec.team]||'#888'};font-weight:600;">${TEAM_LABELS[myRec.team]}</span>` : '';
@@ -1385,14 +1388,23 @@ function renderMyRequests(yr='all'){
     </div>
     <div style="font-size:10px;color:var(--text3);margin-top:4px;">${pct.toFixed(0)}% du quota utilisé · 1.83 j/mois × ${quotaYear}</div>`;
 
-  const rows = REQUESTS.filter(r=>r.employee===name && (yr==='all'||r.startDate.startsWith(yr)))
+  // populate year select dynamically
+  const _myYrSel = document.getElementById('my-year-sel');
+  if(_myYrSel){
+    const _myYears=[...new Set(REQUESTS.filter(r=>r.employee===name&&r.startDate).map(r=>r.startDate.substring(0,4)))].filter(Boolean).sort().reverse();
+    const _prev=_myYrSel.value||yr;
+    _myYrSel.innerHTML='<option value="all">Toutes les années</option>'+_myYears.map(y=>`<option value="${y}" ${y===_prev?'selected':''}>${y}</option>`).join('');
+    if(!_myYrSel.value||(_prev!=='all'&&!_myYears.includes(_prev)))_myYrSel.value=_myYears[0]||'all';
+  }
+  const _yr2=document.getElementById('my-year-sel')?.value||yr;
+  const rows = REQUESTS.filter(r=>r.employee===name && (_yr2==='all'||r.startDate.startsWith(_yr2)))
     .sort((a,b)=>b.startDate.localeCompare(a.startDate));
 
   document.getElementById('my-tbody').innerHTML = rows.length ? rows.map(r=>`
     <tr>
       <td style="font-weight:500;color:var(--blue);font-size:11px;">${r.id}</td>
       <td>${typePill(r.type)}</td>
-      <td>${fmtDate(r.startDate)}</td>
+      <td>${fmtDate(r.startDate)} <span style="font-size:10px;background:var(--surface2);color:var(--text3);padding:1px 5px;border-radius:4px;">${(r.startDate||'').substring(0,4)}</span></td>
       <td>${fmtDate(r.endDate)}</td>
       <td><strong>${r.days}</strong></td>
       <td>${statusPill(r.status)}</td>
@@ -1507,19 +1519,28 @@ function submitRequest(){
 
 // ─── DASHBOARD ───────────────────────────────────────────────
 function renderDashboard(){
+  REQUESTS=normalizeReqs(JSON.parse(localStorage.getItem('hr_requests')||'[]'));
   const _sess = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
   const isSA  = _sess.role === 'superadmin';
-  const yr = document.getElementById('dash-year').value;
+  // dynamic year select
+  const _ddSel=document.getElementById('dash-year');
+  if(_ddSel){
+    const _ddYears=[...new Set(REQUESTS.filter(r=>r.startDate).map(r=>r.startDate.substring(0,4)))].filter(Boolean).sort().reverse();
+    const _ddPrev=_ddSel.value;
+    _ddSel.innerHTML='<option value="all">Toutes les années</option>'+_ddYears.map(y=>`<option value="${y}" ${y===_ddPrev||(!_ddYears.includes(_ddPrev)&&y===_ddYears[0])?'selected':''}>${y}</option>`).join('');
+  }
+  const yr = document.getElementById('dash-year').value||'all';
   document.getElementById('quota-year-label').textContent = yr==='all'?'all time':yr;
   const allReqs = isSA ? REQUESTS : REQUESTS.filter(r => {
     const emp = getEmployees().find(e => e.name === r.employee);
     return emp && emp.team === _sess.team;
   });
-  const filtered = allReqs.filter(r=>yr==='all'||r.startDate.startsWith(yr));
-  const accepted = filtered.filter(r=>r.status==='accepted');
+  const _ddYrNum=yr==='all'?String(new Date().getFullYear()):yr;
+  const filtered = allReqs.filter(r=>yr==='all'||r.startDate.startsWith(_ddYrNum));
+  const accepted = filtered.filter(r=>(r.status||'').toLowerCase()==='accepted');
 
   const totalDays = accepted.reduce((s,r)=>s+parseDays(r.days),0);
-  const pending = REQUESTS.filter(r=>r.status==='pending').length;
+  const pending = REQUESTS.filter(r=>(r.status||'').toLowerCase()==='pending').length;
   const annualDays = accepted.filter(r=>r.type==='Paid Leave (Annual)').reduce((s,r)=>s+parseDays(r.days),0);
   const sickDays = accepted.filter(r=>r.type==='Sick Leave').reduce((s,r)=>s+parseDays(r.days),0);
 
@@ -1585,7 +1606,7 @@ function renderDashboard(){
   });
 
   // Quota bars — use current year when "all" is selected
-  const empYear = yr==='all' ? new Date().getFullYear().toString() : yr;
+  const empYear = yr==='all' ? String(new Date().getFullYear()) : yr;
   const acc = accrued(empYear);
   const _dashEmps = isSA ? getEmployees() : getEmployees().filter(e=>e.team===_sess.team);
   const quotaRows=_dashEmps.map(e=>{
@@ -1607,7 +1628,7 @@ function renderDashboard(){
 // ─── APPROVALS ───────────────────────────────────────────────
 function renderApprovals(){
   const session = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
-  const allPending = REQUESTS.filter(r=>r.status==='pending').sort((a,b)=>a.submittedAt.localeCompare(b.submittedAt));
+  const allPending = REQUESTS.filter(r=>(r.status||'').toLowerCase()==='pending').sort((a,b)=>a.submittedAt.localeCompare(b.submittedAt));
   // Filter to only requests this user can approve
   const pending = allPending.filter(r => canApprove(session, r));
 
@@ -1646,12 +1667,18 @@ function renderApprovals(){
 
 function act(id, status){
   const r=REQUESTS.find(x=>x.id===id);
-  if(r){r.status=status;r.reviewedAt=new Date().toISOString();save();}
+  if(r){r.status=status.toLowerCase();r.reviewedAt=new Date().toISOString();save();}
   if(USE_GSHEETS){
-    apiPost({action:'updateRequest', id, updates:{status, reviewedAt:r?.reviewedAt}})
-      .catch(e=>console.warn('Sheets sync failed:', e));
+    apiPost({action:'updateRequest',id,updates:{status:status.toLowerCase(),reviewedAt:r?.reviewedAt||''}})
+      .catch(e=>console.warn('Sheets sync:',e));
   }
   renderApprovals();updatePendingBadge();
+  setTimeout(()=>{
+    const ap=document.querySelector('.panel.active')?.id;
+    if(ap==='panel-dashboard') renderDashboard();
+    if(ap==='panel-team-dash') renderTeamDash();
+    renderDashboard(); renderTeamDash();
+  },50);
 }
 
 // ─── EMPLOYEES ───────────────────────────────────────────────
@@ -1728,7 +1755,7 @@ function renderHistory(){
       <td style="color:var(--text2);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.reason||'—'}</td>
       <td style="color:var(--text3);font-size:11px;">${fmtDate(r.submittedAt)}</td>
       <td>
-        ${r.status==='pending'?`<div class="action-group">
+        ${(r.status||'').toLowerCase()==='pending'?`<div class="action-group">
           <button class="btn btn-success btn-sm" onclick="act('${r.id}','accepted');renderHistory()">✓</button>
           <button class="btn btn-danger btn-sm" onclick="act('${r.id}','rejected');renderHistory()">✗</button>
         </div>`:`<button class="btn btn-ghost btn-sm" onclick="openDetail('${r.id}')">View</button>`}
@@ -1757,7 +1784,7 @@ function openDetail(id){
     <div style="margin-top:1rem;font-size:12px;color:var(--text3);">
       Quota ${r.startDate.substring(0,4)} — Utilisés (tous types) : ${usedDays(r.employee,r.startDate.substring(0,4)).toFixed(1)} j / ${accrued(r.startDate.substring(0,4)).toFixed(1)} j acquis
     </div>`;
-  const isPending=r.status==='pending';
+  const isPending=(r.status||'').toLowerCase()==='pending';
   document.getElementById('modal-accept').style.display=isPending&&currentUser==='admin'?'':'none';
   document.getElementById('modal-reject').style.display=isPending&&currentUser==='admin'?'':'none';
   document.getElementById('detail-modal').classList.add('open');
@@ -2396,8 +2423,18 @@ async function deleteLeaveType(idx){
 
 // ─── TEAM DASHBOARD ───────────────────────────────────────────
 function renderTeamDash(){
+  REQUESTS=normalizeReqs(JSON.parse(localStorage.getItem('hr_requests')||'[]'));
   const _sess  = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
-  const yr     = document.getElementById('td-year')?.value || String(new Date().getFullYear());
+  // dynamic year select
+  const _tdSel=document.getElementById('td-year');
+  if(_tdSel){
+    let members2=getEmployees(); if(_sess.role!=='superadmin') members2=members2.filter(e=>e.team===_sess.team);
+    const _tdYears=[...new Set(REQUESTS.filter(r=>members2.find(e=>e.name===r.employee)&&r.startDate).map(r=>r.startDate.substring(0,4)))].filter(Boolean).sort().reverse();
+    const _tdPrev=_tdSel.value;
+    _tdSel.innerHTML='<option value="all">Toutes les années</option>'+_tdYears.map(y=>`<option value="${y}" ${y===_tdPrev?'selected':''}>${y}</option>`).join('');
+  }
+  const _rawYr=document.getElementById('td-year')?.value||'all';
+  const yr=_rawYr==='all'?String(new Date().getFullYear()):_rawYr;
   const isSA   = (_sess.role||'') === 'superadmin';
   const tf     = document.getElementById('td-team-filter')?.value || '';
 
@@ -2412,7 +2449,7 @@ function renderTeamDash(){
   if(tfEl) tfEl.style.display = isSA ? '' : 'none';
 
   const acc       = accrued(yr);
-  const teamReqs  = REQUESTS.filter(r => r.status === 'accepted' && r.startDate.startsWith(yr) && members.find(e => e.name === r.employee));
+  const teamReqs  = REQUESTS.filter(r => (r.status||'').toLowerCase()==='accepted' && (_rawYr==='all'||r.startDate.startsWith(yr)) && members.find(e => e.name === r.employee));
   const totalDays = teamReqs.reduce((s,r) => s + parseDays(r.days), 0);
   const pending   = REQUESTS.filter(r => r.status === 'pending' && members.find(e => e.name === r.employee)).length;
   const over      = members.filter(e => usedDays(e.name, yr) > acc).length;
