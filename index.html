@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- version: 20260610090551 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AdvantryX · HR Platform</title>
 <style>
@@ -1170,7 +1174,7 @@ async function doLogin(){
           apiGet('getLeaveTypes'),
           apiGet('getPerfNotes'),
         ]);
-        if(freshEmps)   { saveEmployees(freshEmps); EMPLOYEES = freshEmps; }
+        if(freshEmps && freshEmps.length > 0){ saveEmployees(freshEmps); EMPLOYEES = freshEmps; }
         if(freshReqs && freshReqs.length > 0){
           REQUESTS = normalizeReqs(freshReqs);
           save();
@@ -1227,6 +1231,8 @@ function startSession(user){
   // Show Sync button if GSheets connected
   const syncBtn = document.getElementById('btn-sync');
   if(syncBtn) syncBtn.style.display = USE_GSHEETS ? '' : 'none';
+  const purgeBtn = document.getElementById('btn-purge');
+  if(purgeBtn) purgeBtn.style.display = (isSuperAdmin && USE_GSHEETS) ? '' : 'none';
   document.getElementById('sidebar-avatar').style.background = col;
   document.getElementById('sidebar-avatar').textContent = initials(user.name);
   document.getElementById('sidebar-name').textContent = user.name;
@@ -1627,6 +1633,47 @@ function renderDashboard(){
     </div>`).join('');
 }
 
+
+// ─── PURGE GOOGLE SHEET ───────────────────────────────────────────────────────
+async function purgeGoogleSheet(){
+  const sess = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  if(sess.role !== 'superadmin'){
+    alert('Accès refusé. Seul le Super Admin peut purger les données.');
+    return;
+  }
+  const confirmed = prompt(
+    'ATTENTION : Cette action va supprimer TOUTES les données du Google Sheet.\n' +
+    'Employés, demandes, notes, grades, types de congé.\n\n' +
+    'Tapez PURGER pour confirmer :'
+  );
+  if(confirmed !== 'PURGER') { alert('Opération annulée.'); return; }
+
+  setLoading(true);
+  const results = [];
+  try {
+    // Purge each tab
+    const tabs = ['employees','requests','passwords','grades','leave_types','perf_notes'];
+    for(const tab of tabs){
+      try {
+        const r = await apiPost({action:'purgeTab', tab});
+        results.push('✓ ' + tab + ': ' + (r?.deleted||0) + ' lignes supprimées');
+      } catch(e) {
+        results.push('✗ ' + tab + ': ' + e.message);
+      }
+    }
+    // Clear local cache too
+    ['hr_requests','hr_employees','hr_grades','hr_ltypes','hr_perf','hr_passwords']
+      .forEach(k => localStorage.removeItem(k));
+    REQUESTS  = [];
+    EMPLOYEES = [];
+
+    alert('Purge terminée :\n' + results.join('\n'));
+    renderUserMgmt();
+  } finally {
+    setLoading(false);
+  }
+}
+
 // ─── APPROVALS ───────────────────────────────────────────────
 function renderApprovals(){
   const session = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
@@ -1815,8 +1862,8 @@ function renderUserMgmt(){
   );
   document.getElementById('um-count').textContent = `(${EMPLOYEES.length} utilisateurs)`;
   const session = JSON.parse(sessionStorage.getItem('hr_session') || '{}');
-  const roleOptions = (cur, disabled) => ['employee','team_manager','superadmin'].map(v =>
-    `<option value="${v}" ${cur===v?'selected':''}>${{employee:'👤 Employé',team_manager:'🏷 Manager',superadmin:'👑 Super Admin'}[v]}</option>`
+  const roleOptions = (cur, disabled) => ['employee','team_manager','admin','superadmin','comptable'].map(v =>
+    `<option value="${v}" ${cur===v?'selected':''}>${{employee:'👤 Employé',team_manager:'🏷 Manager',admin:'🔑 Admin',superadmin:'👑 Super Admin',comptable:'📊 Comptable'}[v]||v}</option>`
   ).join('');
   const teamOptions = (cur, disabled) => ['','textile','pharma'].map(v =>
     `<option value="${v}" ${cur===v?'selected':''}>${{'':"— Aucune —",textile:"🧵 Textile",pharma:"💊 Pharma"}[v]}</option>`
@@ -1982,10 +2029,19 @@ async function changeRole(idx, role){
     } finally { setLoading(false); }
   }
   saveEmployees(EMPLOYEES);
-  const labels = {superadmin:'👑 Super Admin', team_manager:'🏷 Manager', employee:'👤 Employé'};
+  const labels = {superadmin:'👑 Super Admin', admin:'🔑 Admin', team_manager:'🏷 Manager', employee:'👤 Employé', comptable:'📊 Comptable'};
   _alCR2.className='alert alert-success';
   _alCR2.innerHTML=`✅ Rôle de <strong>${emp.name}</strong> : ${labels[role]||role}.`;
   _alCR2.style.display='flex';
+  // Re-fetch from Sheets to confirm and refresh UI
+  if(USE_GSHEETS){
+    apiGet('getEmployees').then(fresh=>{
+      if(fresh&&fresh.length>0){ EMPLOYEES=fresh; saveEmployees(fresh); }
+      renderUserMgmt();
+    }).catch(()=>renderUserMgmt());
+  } else {
+    renderUserMgmt();
+  }
 }
 
 function changeTeam(idx, team){
@@ -1995,12 +2051,20 @@ function changeTeam(idx, team){
   if(USE_GSHEETS){
     const emp = EMPLOYEES[idx];
     apiPost({action:'saveEmployee', employee:{...emp}})
+      .then(()=>{
+        apiGet('getEmployees').then(fresh=>{
+          if(fresh&&fresh.length>0){ EMPLOYEES=fresh; saveEmployees(fresh); }
+          renderUserMgmt();
+        }).catch(()=>renderUserMgmt());
+      })
       .catch(e=>console.warn('Sheets sync:', e));
+  } else {
+    renderUserMgmt();
   }
-  const al = document.getElementById('um-alert');
-  al.className='alert alert-success';
-  al.innerHTML=`✅ Équipe de <strong>${EMPLOYEES[idx].name}</strong> mise à jour : ${team ? TEAM_LABELS[team] : 'Aucune'}.`;
-  al.style.display='flex';
+  const _alCT = document.getElementById('um-alert');
+  _alCT.className='alert alert-success';
+  _alCT.innerHTML=`✅ Équipe de <strong>${EMPLOYEES[idx].name}</strong> mise à jour : ${team ? TEAM_LABELS[team] : 'Aucune'}.`;
+  _alCT.style.display='flex';
 }
 
 async function resetUserPassword(email, name){
