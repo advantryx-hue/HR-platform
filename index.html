@@ -843,7 +843,7 @@ textarea{resize:vertical;min-height:80px;}
 // ─────────────────────────────────────────────────────────────
 // CONFIG — set your deployed Apps Script URL here
 // ─────────────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdQFgUqVHCa2blR65mGIz8iu8ukNdoPuqIaXibiqz9-E2w1sG37qWi_ffVnldzOdN6rw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybf7ye78O-N29vPC2XtvrYKYp6DvMq3BbGBIMVwXbC2C-OCh3QUawtG-UNtKhEf88QoA/exec';
 const USE_GSHEETS = APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/');
 
 // ─── API LAYER ────────────────────────────────────────────────
@@ -1088,30 +1088,40 @@ let currentUser = null; // name string or 'admin'
 let currentModal = null;
 let chartInstance = null;
 
+var MONTHS_MAP={'jan':'01','feb':'02','mar':'03','apr':'04','may':'05','jun':'06','jul':'07','aug':'08','sep':'09','oct':'10','nov':'11','dec':'12'};
 function toISODate(val){
   if(!val) return '';
   var s = String(val).trim();
-  // Already ISO format: 2026-06-09
+  // Already ISO: 2026-06-09
   if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0,10);
-  // Try parsing as Date (handles "Mon Jun 09 2026", "06/09/2026", etc.)
-  try {
-    var d = new Date(s);
-    if(!isNaN(d.getTime())){
-      var yr  = d.getFullYear();
-      var mo  = String(d.getMonth()+1).padStart(2,'0');
-      var day = String(d.getDate()).padStart(2,'0');
-      return yr+'-'+mo+'-'+day;
-    }
-  } catch(e){}
-  return s.substring(0,10);
+  // DD/MM/YYYY or MM/DD/YYYY
+  var slashM = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(slashM) return slashM[3]+'-'+slashM[2].padStart(2,'0')+'-'+slashM[1].padStart(2,'0');
+  // "Mon Jun 09 2026 ..." — extract year (4 digits) and month name and day
+  var parts = s.split(/[\s,]+/);
+  var yr='', mo='', dy='';
+  for(var i=0;i<parts.length;i++){
+    var p=parts[i];
+    if(/^\d{4}$/.test(p)) yr=p;
+    else if(/^\d{1,2}$/.test(p) && !dy) dy=p.padStart(2,'0');
+    else if(MONTHS_MAP[p.toLowerCase().substring(0,3)]) mo=MONTHS_MAP[p.toLowerCase().substring(0,3)];
+  }
+  if(yr&&mo&&dy) return yr+'-'+mo+'-'+dy;
+  if(yr&&mo) return yr+'-'+mo+'-01';
+  // Last resort: find 4-digit year anywhere
+  var yrMatch = s.match(/(20\d{2})/);
+  if(yrMatch) return yrMatch[1]+'-01-01';
+  return '';
 }
 function normalizeReqs(arr){
-  return (arr||[]).map(r=>({...r,
-    status:(r.status||'pending').toLowerCase().trim(),
-    days:parseFloat(String(r.days||0).replace(',','.'))||0,
-    startDate:toISODate(r.startDate),
-    endDate:toISODate(r.endDate),
-  }));
+  return (arr||[]).map(function(r){
+    return Object.assign({},r,{
+      status:(r.status||'pending').toLowerCase().trim(),
+      days:parseFloat(String(r.days||0).replace(',','.'))||0,
+      startDate:toISODate(r.startDate),
+      endDate:toISODate(r.endDate),
+    });
+  });
 }
 function save(){
   REQUESTS=normalizeReqs(REQUESTS);
