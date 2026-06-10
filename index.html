@@ -364,8 +364,8 @@ textarea{resize:vertical;min-height:80px;}
 
   <!-- ── DASHBOARD ── -->
   <div class="panel" id="panel-dashboard">
-    <div class="page-title">HR Dashboard</div>
-    <div class="page-sub">Overview of leave activity across all employees</div>
+    <div class="page-title">Tableau de bord RH</div>
+    <div class="page-sub">Vue d'ensemble des congés</div>
 
     <div style="display:flex;gap:8px;margin-bottom:1rem;align-items:center;">
       <select id="dash-year" onchange="renderDashboard()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
@@ -379,7 +379,7 @@ textarea{resize:vertical;min-height:80px;}
 
     <div class="grid2">
       <div class="card">
-        <div class="card-title">Leave by type</div>
+        <div class="card-title">Congés par type</div>
         <div id="dash-by-type"></div>
       </div>
       <div class="card">
@@ -396,7 +396,7 @@ textarea{resize:vertical;min-height:80px;}
 
   <!-- ── APPROVALS ── -->
   <div class="panel" id="panel-approvals">
-    <div class="page-title">Pending Approvals</div>
+    <div class="page-title">En attente Approvals</div>
     <div class="page-sub">Review and act on leave requests awaiting decision</div>
     <div class="tbl-wrap">
       <table>
@@ -429,7 +429,7 @@ textarea{resize:vertical;min-height:80px;}
       <input type="text" id="hist-search" placeholder="Search employee, type, ref…" oninput="renderHistory()">
       <select id="hist-status" onchange="renderHistory()">
         <option value="">All statuses</option>
-        <option value="pending">Pending</option>
+        <option value="pending">En attente</option>
         <option value="accepted">Accepted</option>
         <option value="rejected">Rejected</option>
       </select>
@@ -441,7 +441,7 @@ textarea{resize:vertical;min-height:80px;}
       <select id="hist-type" onchange="renderHistory()">
         <option value="">All types</option>
         <option>Paid Leave (Annual)</option>
-        <option>Sick Leave</option>
+        <option>Congé maladie</option>
         <option>Unpaid Leave</option>
         <option>Emergency Leave</option>
         <option>Compensatory Off</option>
@@ -617,7 +617,7 @@ textarea{resize:vertical;min-height:80px;}
     <div class="page-sub" id="td-sub">Vue d'ensemble de votre équipe</div>
     <div style="display:flex;gap:8px;margin-bottom:1.25rem;align-items:center;flex-wrap:wrap;">
       <select id="td-year" onchange="renderTeamDash()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
-        <option value="2025">2025</option><option value="2026" selected>2026</option>
+        <option value="all">Toutes les années</option>
       </select>
       <select id="td-team-filter" onchange="renderTeamDash()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);">
         <option value="">Toutes les équipes</option>
@@ -890,7 +890,7 @@ const ANNUAL_QUOTA = Math.round(QUOTA_PER_MONTH * 12 * 10) / 10; // 21.96
 // ── Leave type store ─────────────────────────────────────────────────────────
 const DEFAULT_LEAVE_TYPES = [
   {id:'annual',    label:'Paid Leave (Annual)', paid:true,  advanceDays:3, color:'#2563eb'},
-  {id:'sick',      label:'Sick Leave',          paid:true,  advanceDays:0, color:'#7c3aed'},
+  {id:'sick',      label:'Congé maladie',          paid:true,  advanceDays:0, color:'#7c3aed'},
   {id:'unpaid',    label:'Unpaid Leave',        paid:false, advanceDays:0, color:'#6b7280'},
   {id:'emergency', label:'Emergency Leave',     paid:true,  advanceDays:0, color:'#ea580c'},
   {id:'comp',      label:'Compensatory Off',    paid:true,  advanceDays:0, color:'#0891b2'},
@@ -1004,82 +1004,82 @@ const SEED = [
   {id:"L20250808-16",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Unpaid Leave",startDate:"2025-05-02",endDate:"2025-05-02",dayType:"Full day",days:1,reason:"illness and fatigue",status:"accepted",submittedAt:"2025-05-02T08:00:00.000Z"},
   {id:"L20250808-17",employee:"Islem Benrhouma",email:"i.benrhouma@advantryx.com",type:"Unpaid Leave",startDate:"2025-05-02",endDate:"2025-05-02",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-02T08:00:00.000Z"},
   {id:"L20250808-18",employee:"Sahar Mallouli",email:"s.mallouli@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-02",endDate:"2025-05-02",dayType:"Full day",days:1,reason:"ma fille est malade",status:"accepted",submittedAt:"2025-05-02T08:00:00.000Z"},
-  {id:"L20250808-19",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Sick Leave",startDate:"2025-05-05",endDate:"2025-05-05",dayType:"Half Day – Morning",days:0.5,reason:"Sick",status:"accepted",submittedAt:"2025-05-05T08:00:00.000Z"},
+  {id:"L20250808-19",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Congé maladie",startDate:"2025-05-05",endDate:"2025-05-05",dayType:"Half Day – Morning",days:0.5,reason:"Sick",status:"accepted",submittedAt:"2025-05-05T08:00:00.000Z"},
   {id:"L20250808-20",employee:"Sahar Mallouli",email:"s.mallouli@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-07",endDate:"2025-05-07",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-07T08:00:00.000Z"},
   {id:"L20250808-21",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Emergency Leave",startDate:"2025-05-08",endDate:"2025-05-08",dayType:"Full day",days:1,reason:"death cases",status:"accepted",submittedAt:"2025-05-08T08:00:00.000Z"},
   {id:"L20250808-22",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-09",endDate:"2025-05-09",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-09T08:00:00.000Z"},
-  {id:"L20250808-24",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-05-22",endDate:"2025-05-22",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-22T08:00:00.000Z"},
+  {id:"L20250808-24",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-05-22",endDate:"2025-05-22",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-05-22T08:00:00.000Z"},
   {id:"L20250808-25",employee:"Islem Benrhouma",email:"i.benrhouma@advantryx.com",type:"Emergency Leave",startDate:"2025-05-24",endDate:"2025-05-24",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-05-24T08:00:00.000Z"},
-  {id:"L20250808-26",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-05-26",endDate:"2025-05-26",dayType:"Full day",days:1,reason:"Heartache",status:"accepted",submittedAt:"2025-05-26T08:00:00.000Z"},
+  {id:"L20250808-26",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-05-26",endDate:"2025-05-26",dayType:"Full day",days:1,reason:"Heartache",status:"accepted",submittedAt:"2025-05-26T08:00:00.000Z"},
   {id:"L20250808-27",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-29",endDate:"2025-05-31",dayType:"Full day",days:2,reason:"Go to the hospital",status:"accepted",submittedAt:"2025-05-29T08:00:00.000Z"},
   {id:"L20250808-28",employee:"Kamel ABouchaala",email:"k.bouchaala@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-05-29",endDate:"2025-05-29",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-05-29T08:00:00.000Z"},
   {id:"L20250808-29",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-04",endDate:"2025-06-04",dayType:"Half Day – Afternoon",days:0.5,reason:"relocation",status:"accepted",submittedAt:"2025-06-04T08:00:00.000Z"},
   {id:"L20250808-30",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-05",endDate:"2025-06-05",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-06-05T08:00:00.000Z"},
   {id:"L20250808-31",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-05",endDate:"2025-06-05",dayType:"Full day",days:1,reason:"relocation",status:"accepted",submittedAt:"2025-06-05T08:00:00.000Z"},
-  {id:"L20250808-32",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-06-05",endDate:"2025-06-06",dayType:"Full day",days:1,reason:"Aller à l'hôpital",status:"accepted",submittedAt:"2025-06-05T08:00:00.000Z"},
-  {id:"L20250808-33",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Sick Leave",startDate:"2025-06-18",endDate:"2025-06-19",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-06-18T08:00:00.000Z"},
+  {id:"L20250808-32",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Congé maladie",startDate:"2025-06-05",endDate:"2025-06-06",dayType:"Full day",days:1,reason:"Aller à l'hôpital",status:"accepted",submittedAt:"2025-06-05T08:00:00.000Z"},
+  {id:"L20250808-33",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Congé maladie",startDate:"2025-06-18",endDate:"2025-06-19",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-06-18T08:00:00.000Z"},
   {id:"L20250808-34",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-19",endDate:"2025-06-19",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-06-19T08:00:00.000Z"},
   {id:"L20250808-35",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-20",endDate:"2025-06-20",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-06-20T08:00:00.000Z"},
   {id:"L20250808-36",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-23",endDate:"2025-06-23",dayType:"Full day",days:1,reason:"edit CIN",status:"accepted",submittedAt:"2025-06-23T08:00:00.000Z"},
   {id:"L20250808-37",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-06-23",endDate:"2025-06-24",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-06-23T08:00:00.000Z"},
-  {id:"L20250808-38",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-06-30",endDate:"2025-07-04",dayType:"Full day",days:5,reason:"",status:"accepted",submittedAt:"2025-06-30T08:00:00.000Z"},
+  {id:"L20250808-38",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Congé maladie",startDate:"2025-06-30",endDate:"2025-07-04",dayType:"Full day",days:5,reason:"",status:"accepted",submittedAt:"2025-06-30T08:00:00.000Z"},
   {id:"L20250808-39",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-04",endDate:"2025-07-04",dayType:"Half Day – Afternoon",days:1,reason:"family commitment",status:"accepted",submittedAt:"2025-07-04T08:00:00.000Z"},
-  {id:"L20250808-40",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-07-07",endDate:"2025-07-07",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-07T08:00:00.000Z"},
-  {id:"L20250808-41",employee:"Islem Benrhouma",email:"i.benrhouma@advantryx.com",type:"Sick Leave",startDate:"2025-07-08",endDate:"2025-07-08",dayType:"Half Day – Afternoon",days:0.5,reason:"Maladie",status:"accepted",submittedAt:"2025-07-08T08:00:00.000Z"},
+  {id:"L20250808-40",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-07-07",endDate:"2025-07-07",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-07T08:00:00.000Z"},
+  {id:"L20250808-41",employee:"Islem Benrhouma",email:"i.benrhouma@advantryx.com",type:"Congé maladie",startDate:"2025-07-08",endDate:"2025-07-08",dayType:"Half Day – Afternoon",days:0.5,reason:"Maladie",status:"accepted",submittedAt:"2025-07-08T08:00:00.000Z"},
   {id:"L20250808-42",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Compensatory Off",startDate:"2025-07-08",endDate:"2025-07-08",dayType:"Full day",days:1,reason:"fracture de la main droite",status:"accepted",submittedAt:"2025-07-08T08:00:00.000Z"},
-  {id:"L20250808-43",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Sick Leave",startDate:"2025-07-09",endDate:"2025-07-09",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-07-09T08:00:00.000Z"},
+  {id:"L20250808-43",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Congé maladie",startDate:"2025-07-09",endDate:"2025-07-09",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-07-09T08:00:00.000Z"},
   {id:"L20250808-44",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-14",endDate:"2025-07-15",dayType:"Full day",days:2,reason:"father medical check-up",status:"accepted",submittedAt:"2025-07-14T08:00:00.000Z"},
   {id:"L20250808-45",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-21",endDate:"2025-07-24",dayType:"Full day",days:4,reason:"",status:"accepted",submittedAt:"2025-07-21T08:00:00.000Z"},
   {id:"L20250808-46",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-21",endDate:"2025-07-24",dayType:"Full day",days:4,reason:"",status:"accepted",submittedAt:"2025-07-21T08:00:00.000Z"},
   {id:"L20250808-47",employee:"Sahar Mallouli",email:"s.mallouli@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-07",endDate:"2025-07-07",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-07T08:00:00.000Z"},
   {id:"L20250808-49",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-07-28",endDate:"2025-07-28",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-28T08:00:00.000Z"},
   {id:"L20250808-50",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Emergency Leave",startDate:"2025-07-18",endDate:"2025-07-18",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-18T08:00:00.000Z"},
-  {id:"L20250808-51",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-07-24",endDate:"2025-07-24",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-24T08:00:00.000Z"},
-  {id:"L20250808-52",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-08-03",endDate:"2025-08-04",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-08-03T08:00:00.000Z"},
-  {id:"L20250808-53",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-08-05",endDate:"2025-08-05",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-08-05T08:00:00.000Z"},
-  {id:"L20250808-54",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-08-06",endDate:"2025-08-06",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-08-06T08:00:00.000Z"},
-  {id:"L20250808-55",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Sick Leave",startDate:"2025-08-08",endDate:"2025-08-08",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-08-08T08:00:00.000Z"},
+  {id:"L20250808-51",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-07-24",endDate:"2025-07-24",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-07-24T08:00:00.000Z"},
+  {id:"L20250808-52",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Congé maladie",startDate:"2025-08-03",endDate:"2025-08-04",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-08-03T08:00:00.000Z"},
+  {id:"L20250808-53",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-08-05",endDate:"2025-08-05",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-08-05T08:00:00.000Z"},
+  {id:"L20250808-54",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-08-06",endDate:"2025-08-06",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-08-06T08:00:00.000Z"},
+  {id:"L20250808-55",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Congé maladie",startDate:"2025-08-08",endDate:"2025-08-08",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-08-08T08:00:00.000Z"},
   {id:"L20250808-56",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-08-11",endDate:"2025-08-15",dayType:"Full day",days:5,reason:"test",status:"accepted",submittedAt:"2025-08-11T08:00:00.000Z"},
   {id:"L20250808-59",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Emergency Leave",startDate:"2025-08-08",endDate:"2025-08-08",dayType:"Half Day – Afternoon",days:0.5,reason:"Test",status:"accepted",submittedAt:"2025-08-08T08:00:00.000Z"},
   {id:"L20250808-60",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-08-08",endDate:"2025-08-08",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-08-08T08:00:00.000Z"},
   {id:"L20250808-61",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Maternity/Paternity Leave",startDate:"2025-08-15",endDate:"2025-08-15",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-08-15T08:00:00.000Z"},
   {id:"L20250808-62",employee:"Adam Bouchaala",email:"a.bouchaala@advantryx.com",type:"Compensatory Off",startDate:"2025-08-11",endDate:"2025-08-15",dayType:"Half Day – Morning",days:0.75,reason:"",status:"rejected",submittedAt:"2025-08-11T08:00:00.000Z"},
-  {id:"L20250825-63",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-08-25",endDate:"2025-08-25",dayType:"Full day",days:1,reason:"Sickness",status:"accepted",submittedAt:"2025-08-25T08:00:00.000Z"},
+  {id:"L20250825-63",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-08-25",endDate:"2025-08-25",dayType:"Full day",days:1,reason:"Sickness",status:"accepted",submittedAt:"2025-08-25T08:00:00.000Z"},
   {id:"L20250828-64",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-08-29",endDate:"2025-08-29",dayType:"Full day",days:1,reason:"Personal family issues",status:"accepted",submittedAt:"2025-08-29T08:00:00.000Z"},
   {id:"L20250829-65",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-05",endDate:"2025-09-05",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-05T08:00:00.000Z"},
   {id:"L20250901-66",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-08-25",endDate:"2025-08-25",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-08-25T08:00:00.000Z"},
   {id:"L20250901-67",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-01",endDate:"2025-09-01",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-09-01T08:00:00.000Z"},
-  {id:"L20250901-68",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Sick Leave",startDate:"2025-08-26",endDate:"2025-08-27",dayType:"Full day",days:2,reason:"Gastroenterite",status:"accepted",submittedAt:"2025-08-26T08:00:00.000Z"},
+  {id:"L20250901-68",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Congé maladie",startDate:"2025-08-26",endDate:"2025-08-27",dayType:"Full day",days:2,reason:"Gastroenterite",status:"accepted",submittedAt:"2025-08-26T08:00:00.000Z"},
   {id:"L20250901-69",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Unpaid Leave",startDate:"2025-09-12",endDate:"2025-09-15",dayType:"Full day",days:2,reason:"Vacation",status:"accepted",submittedAt:"2025-09-12T08:00:00.000Z"},
-  {id:"L20250905-70",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Sick Leave",startDate:"2025-09-01",endDate:"2025-09-01",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-01T08:00:00.000Z"},
-  {id:"L20250915-71",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-09-15",endDate:"2025-09-15",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-09-15T08:00:00.000Z"},
+  {id:"L20250905-70",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Congé maladie",startDate:"2025-09-01",endDate:"2025-09-01",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-01T08:00:00.000Z"},
+  {id:"L20250915-71",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Congé maladie",startDate:"2025-09-15",endDate:"2025-09-15",dayType:"Half Day – Afternoon",days:0.5,reason:"",status:"accepted",submittedAt:"2025-09-15T08:00:00.000Z"},
   {id:"L20250916-72",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-19",endDate:"2025-09-19",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-19T08:00:00.000Z"},
-  {id:"L20250923-73",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-09-23",endDate:"2025-09-23",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-23T08:00:00.000Z"},
-  {id:"L20250929-75",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-09-30",endDate:"2025-10-03",dayType:"Full day",days:3,reason:"",status:"accepted",submittedAt:"2025-09-30T08:00:00.000Z"},
+  {id:"L20250923-73",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-09-23",endDate:"2025-09-23",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-23T08:00:00.000Z"},
+  {id:"L20250929-75",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Congé maladie",startDate:"2025-09-30",endDate:"2025-10-03",dayType:"Full day",days:3,reason:"",status:"accepted",submittedAt:"2025-09-30T08:00:00.000Z"},
   {id:"L20250929-76",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-10-03",endDate:"2025-10-03",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-03T08:00:00.000Z"},
   {id:"L20250930-76",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-25",endDate:"2025-09-25",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-25T08:00:00.000Z"},
   {id:"L20250930-77",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-09-29",endDate:"2025-09-29",dayType:"Half Day – Morning",days:0.5,reason:"",status:"accepted",submittedAt:"2025-09-29T08:00:00.000Z"},
   {id:"L20250930-78",employee:"Eya Ibn Hamda",email:"e.ibnhamda@advantryx.com",type:"Unpaid Leave",startDate:"2025-09-30",endDate:"2025-09-30",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-09-30T08:00:00.000Z"},
-  {id:"L20251009-79",employee:"Kamel ABouchaala",email:"k.bouchaala@advantryx.com",type:"Sick Leave",startDate:"2025-10-09",endDate:"2025-10-09",dayType:"Full day",days:1,reason:"Malade",status:"accepted",submittedAt:"2025-10-09T08:00:00.000Z"},
-  {id:"L20251009-80",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-10-09",endDate:"2025-10-09",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-09T08:00:00.000Z"},
-  {id:"L20251013-81",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-10-13",endDate:"2025-10-13",dayType:"Full day",days:1,reason:"Bronchite",status:"accepted",submittedAt:"2025-10-13T08:00:00.000Z"},
-  {id:"L20251014-82",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-10-14",endDate:"2025-10-14",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-14T08:00:00.000Z"},
+  {id:"L20251009-79",employee:"Kamel ABouchaala",email:"k.bouchaala@advantryx.com",type:"Congé maladie",startDate:"2025-10-09",endDate:"2025-10-09",dayType:"Full day",days:1,reason:"Malade",status:"accepted",submittedAt:"2025-10-09T08:00:00.000Z"},
+  {id:"L20251009-80",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-10-09",endDate:"2025-10-09",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-09T08:00:00.000Z"},
+  {id:"L20251013-81",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-10-13",endDate:"2025-10-13",dayType:"Full day",days:1,reason:"Bronchite",status:"accepted",submittedAt:"2025-10-13T08:00:00.000Z"},
+  {id:"L20251014-82",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-10-14",endDate:"2025-10-14",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-14T08:00:00.000Z"},
   {id:"L20251014-83",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-10-17",endDate:"2025-10-17",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-10-17T08:00:00.000Z"},
-  {id:"L20251014-84",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Sick Leave",startDate:"2025-09-30",endDate:"2025-10-10",dayType:"Full day",days:9,reason:"",status:"accepted",submittedAt:"2025-09-30T08:00:00.000Z"},
+  {id:"L20251014-84",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Congé maladie",startDate:"2025-09-30",endDate:"2025-10-10",dayType:"Full day",days:9,reason:"",status:"accepted",submittedAt:"2025-09-30T08:00:00.000Z"},
   {id:"L20251015-85",employee:"Rebah Ajroud",email:"r.ajroud@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-10-30",endDate:"2025-10-31",dayType:"Full day",days:2,reason:"",status:"accepted",submittedAt:"2025-10-30T08:00:00.000Z"},
   {id:"L20251028-86",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-10-28",endDate:"2025-10-28",dayType:"Half Day – Afternoon",days:1,reason:"",status:"accepted",submittedAt:"2025-10-28T08:00:00.000Z"},
-  {id:"L20251034-87",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-03",endDate:"2025-11-03",dayType:"Full day",days:1,reason:"Sickness",status:"accepted",submittedAt:"2025-11-03T08:00:00.000Z"},
+  {id:"L20251034-87",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-11-03",endDate:"2025-11-03",dayType:"Full day",days:1,reason:"Sickness",status:"accepted",submittedAt:"2025-11-03T08:00:00.000Z"},
   {id:"L20251043-88",employee:"Rania Dargouthi",email:"r.darghouthi@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-11-14",endDate:"2025-11-14",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-14T08:00:00.000Z"},
-  {id:"L20251048-89",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-17",endDate:"2025-11-17",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-17T08:00:00.000Z"},
-  {id:"L20251050-90",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-19",endDate:"2025-11-19",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-19T08:00:00.000Z"},
-  {id:"L20251051-91",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-20",endDate:"2025-11-20",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-20T08:00:00.000Z"},
-  {id:"L20251052-92",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-11-21",endDate:"2025-11-21",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-21T08:00:00.000Z"},
+  {id:"L20251048-89",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-11-17",endDate:"2025-11-17",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-17T08:00:00.000Z"},
+  {id:"L20251050-90",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-11-19",endDate:"2025-11-19",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-19T08:00:00.000Z"},
+  {id:"L20251051-91",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-11-20",endDate:"2025-11-20",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-20T08:00:00.000Z"},
+  {id:"L20251052-92",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-11-21",endDate:"2025-11-21",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-21T08:00:00.000Z"},
   {id:"L20251052-93",employee:"Ayman Ben Ismail",email:"a.benismail@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-11-21",endDate:"2025-11-21",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-11-21T08:00:00.000Z"},
   {id:"L20251057-94",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-11-27",endDate:"2025-11-27",dayType:"Half Day – Afternoon",days:0.5,reason:"Afternoon",status:"accepted",submittedAt:"2025-11-27T08:00:00.000Z"},
   {id:"L20251057-95",employee:"Siwar Chbili",email:"s.chbili@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-11-28",endDate:"2025-11-28",dayType:"Half Day – Afternoon",days:0.5,reason:"Afternoon",status:"accepted",submittedAt:"2025-11-28T08:00:00.000Z"},
   {id:"L20251064-96",employee:"Mohamed Amine Fetoui",email:"ma.fetoui@advantryx.com",type:"Paid Leave (Annual)",startDate:"2025-12-04",endDate:"2025-12-04",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-12-04T08:00:00.000Z"},
-  {id:"L20251069-97",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-12-08",endDate:"2025-12-08",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-12-08T08:00:00.000Z"},
-  {id:"L20251070-98",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Sick Leave",startDate:"2025-12-09",endDate:"2025-12-09",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-12-09T08:00:00.000Z"},
+  {id:"L20251069-97",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-12-08",endDate:"2025-12-08",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-12-08T08:00:00.000Z"},
+  {id:"L20251070-98",employee:"Othman Turki",email:"o.turki@advantryx.com",type:"Congé maladie",startDate:"2025-12-09",endDate:"2025-12-09",dayType:"Full day",days:1,reason:"",status:"accepted",submittedAt:"2025-12-09T08:00:00.000Z"},
 ];
 
 // ─── STATE ───────────────────────────────────────────────────
@@ -1088,12 +1088,29 @@ let currentUser = null; // name string or 'admin'
 let currentModal = null;
 let chartInstance = null;
 
+function toISODate(val){
+  if(!val) return '';
+  var s = String(val).trim();
+  // Already ISO format: 2026-06-09
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0,10);
+  // Try parsing as Date (handles "Mon Jun 09 2026", "06/09/2026", etc.)
+  try {
+    var d = new Date(s);
+    if(!isNaN(d.getTime())){
+      var yr  = d.getFullYear();
+      var mo  = String(d.getMonth()+1).padStart(2,'0');
+      var day = String(d.getDate()).padStart(2,'0');
+      return yr+'-'+mo+'-'+day;
+    }
+  } catch(e){}
+  return s.substring(0,10);
+}
 function normalizeReqs(arr){
   return (arr||[]).map(r=>({...r,
     status:(r.status||'pending').toLowerCase().trim(),
     days:parseFloat(String(r.days||0).replace(',','.'))||0,
-    startDate:r.startDate?String(r.startDate).substring(0,10):'',
-    endDate:r.endDate?String(r.endDate).substring(0,10):'',
+    startDate:toISODate(r.startDate),
+    endDate:toISODate(r.endDate),
   }));
 }
 function save(){
@@ -1364,7 +1381,7 @@ function typePill(t){
   return `<span class="pill" style="background:${color}22;color:${color};">${short}</span>`;
 }
 function statusPill(s){
-  const labels={accepted:'Accepted',rejected:'Rejected',pending:'Pending'};
+  const labels={accepted:'Accepted',rejected:'Rejected',pending:'En attente'};
   return `<span class="pill pill-${s}">${labels[s]||s}</span>`;
 }
 function fmtDate(d){return d?d.substring(0,10):'';}
@@ -1554,16 +1571,16 @@ function renderDashboard(){
 
   document.getElementById('dash-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Total days taken</div><div class="metric-val mv-blue">${totalDays.toFixed(1)}</div><div class="metric-sub">${accepted.length} requests accepted</div></div>
-    <div class="metric"><div class="metric-label">Annual leave</div><div class="metric-val mv-amber">${annualDays.toFixed(1)}</div><div class="metric-sub">days of paid annual</div></div>
-    <div class="metric"><div class="metric-label">Sick leave</div><div class="metric-val mv-purple">${sickDays.toFixed(1)}</div><div class="metric-sub">days sick</div></div>
-    <div class="metric"><div class="metric-label">Pending</div><div class="metric-val mv-red">${pending}</div><div class="metric-sub">awaiting approval</div></div>`;
+    <div class="metric"><div class="metric-label">Annual leave</div><div class="metric-val mv-amber">${annualDays.toFixed(1)}</div><div class="metric-sub">jours payés annuel</div></div>
+    <div class="metric"><div class="metric-label">Sick leave</div><div class="metric-val mv-purple">${sickDays.toFixed(1)}</div><div class="metric-sub">jours maladie</div></div>
+    <div class="metric"><div class="metric-label">En attente</div><div class="metric-val mv-red">${pending}</div><div class="metric-sub">à valider</div></div>`;
 
   // By type
   const typeMap={};
   accepted.forEach(r=>{ typeMap[r.type]=(typeMap[r.type]||0)+parseDays(r.days); });
   const sortedTypes=Object.entries(typeMap).sort((a,b)=>b[1]-a[1]);
   const maxT=sortedTypes[0]?.[1]||1;
-  const typeColors={'Paid Leave (Annual)':'var(--blue)','Sick Leave':'#9333ea','Unpaid Leave':'#6b7280','Emergency Leave':'#ea580c','Compensatory Off':'#0891b2','Maternity/Paternity Leave':'#db2777'};
+  const typeColors={'Paid Leave (Annual)':'var(--blue)','Congé maladie':'#9333ea','Unpaid Leave':'#6b7280','Emergency Leave':'#ea580c','Compensatory Off':'#0891b2','Maternity/Paternity Leave':'#db2777'};
   document.getElementById('dash-by-type').innerHTML=sortedTypes.map(([t,v])=>`
     <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
       <span style="font-size:11px;width:150px;flex-shrink:0;color:var(--text2);">${t}</span>
@@ -1736,7 +1753,7 @@ function renderEmployees(){
   const acc=accrued(yr);
   document.getElementById('emp-grid').innerHTML=EMPLOYEES.map(e=>{
     const used = usedDays(e.name, yr);   // ALL accepted types, sum of days field
-    const sick = usedDays(e.name, yr, ['Sick Leave']);
+    const sick = usedDays(e.name, yr, ['Congé maladie']);
     const pct  = acc ? Math.min(100, used / acc * 100) : 0;
     const over = used > acc;
     const color = over ? 'var(--red)' : pct > 80 ? 'var(--amber)' : 'var(--blue)';
@@ -2793,8 +2810,8 @@ function renderComptable(){
     <div class="metric"><div class="metric-lbl">Employés concernés</div><div class="metric-val mv-amber">${absEmps}</div><div class="metric-sub">sur ${filtEmps.length} actifs</div></div>`;
 
   // Main table
-  const typeKeys = ['Paid Leave (Annual)','Sick Leave','Emergency Leave','Unpaid Leave','Compensatory Off','Other'];
-  const typeLabels = {'Paid Leave (Annual)':'Annuel','Sick Leave':'Maladie','Emergency Leave':'Urgence','Unpaid Leave':'Non payé','Compensatory Off':'Comp.','Other':'Autre'};
+  const typeKeys = ['Paid Leave (Annual)','Congé maladie','Emergency Leave','Unpaid Leave','Compensatory Off','Other'];
+  const typeLabels = {'Paid Leave (Annual)':'Annuel','Congé maladie':'Maladie','Emergency Leave':'Urgence','Unpaid Leave':'Non payé','Compensatory Off':'Comp.','Other':'Autre'};
 
   document.getElementById('cpt-tbody').innerHTML = empStats.map(s => {
     const teamBadgeHtml = s.emp.team
