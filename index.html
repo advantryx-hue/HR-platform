@@ -479,6 +479,7 @@ textarea{resize:vertical;min-height:80px;}
           <select id="um-role" onchange="toggleTeamField()">
             <option value="employee">👤 Employé</option>
             <option value="team_manager">🏷 Manager d'équipe</option>
+            <option value="admin">🔑 Admin</option>
             <option value="superadmin">👑 Super Admin</option>
             <option value="comptable">📊 Expert Comptable</option>
           </select>
@@ -1237,15 +1238,16 @@ function startSession(user){
   const isManager = user.role === 'team_manager';
 
   // Role label in sidebar
-  const roleLabels = { superadmin:'👑 Super Admin', team_manager: user.team ? '🏷 Manager ' + (user.team==='textile'?'Textile':'Pharma') : '🏷 Manager', employee:'👤 Employé', comptable:'📊 Expert Comptable' };
+  const roleLabels = { superadmin:'👑 Super Admin', admin:'🔑 Admin', team_manager: user.team ? '🏷 Manager ' + (user.team==='textile'?'Textile':'Pharma') : '🏷 Manager', employee:'👤 Employé', comptable:'📊 Expert Comptable' };
   document.getElementById('sidebar-role').textContent = roleLabels[user.role] || (isAdmin ? '👑 Admin' : '👤 Employé');
 
   // Approvals + history visible to admins and managers
   const isComptable = user.role === 'comptable';
-  const canSeeAdmin = isAdmin || isManager;
+  const canSeeAdmin = isAdmin || isManager || user.role === 'admin';
+  const isAdminRole = isSuperAdmin || user.role === 'admin';
   ['nav-dashboard','nav-employees','nav-history','nav-user-mgmt','nav-leave-types','nav-admin-label'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el) el.style.display = isSuperAdmin ? '' : 'none';
+    if(el) el.style.display = isAdminRole ? '' : 'none';
   });
   ['nav-approvals','nav-team-dash','nav-perf'].forEach(id=>{
     const el=document.getElementById(id);
@@ -1916,9 +1918,17 @@ async function addUser(){
 }
 
 async function removeUser(idx, name){
-  if(!confirm(`Supprimer le compte de ${name} ? Cette action est irréversible.`)) return;
+  if(!confirm('Supprimer le compte de '+name+' ? Cette action est irréversible.')) return;
   EMPLOYEES = getEmployees();
   const removedEmail = EMPLOYEES[idx]?.email;
+  const removedRole  = (EMPLOYEES[idx]?.role||'').toLowerCase();
+  const sess = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  if(removedRole==='superadmin'){
+    {const _alRM=document.getElementById('um-alert');_alRM.className='alert alert-err';_alRM.innerHTML='<b>Impossible de supprimer un Super Admin.</b>';_alRM.style.display='flex';} return;
+  }
+  if(removedRole==='admin' && sess.role!=='superadmin'){
+    {const _alRM=document.getElementById('um-alert');_alRM.className='alert alert-err';_alRM.innerHTML='<b>Seul le Super Admin peut supprimer un Admin.</b>';_alRM.style.display='flex';} return;
+  }
   if(USE_GSHEETS && removedEmail){
     setLoading(true);
     try {
@@ -1944,25 +1954,38 @@ async function removeUser(idx, name){
 
 async function changeRole(idx, role){
   EMPLOYEES = getEmployees();
+  const _sess = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const targetRole = (EMPLOYEES[idx]?.role||'').toLowerCase();
+  const _alCR = document.getElementById('um-alert');
+  if(role==='superadmin' && _sess.role!=='superadmin'){
+    _alCR.className='alert alert-err';
+    _alCR.innerHTML='<b>Seul le Super Admin peut attribuer ce rôle.</b>';
+    _alCR.style.display='flex'; return;
+  }
+  if(targetRole==='superadmin' && _sess.role!=='superadmin'){
+    _alCR.className='alert alert-err';
+    _alCR.innerHTML="<b>Impossible de modifier le rôle d'un Super Admin.</b>";
+    _alCR.style.display='flex'; return;
+  }
   EMPLOYEES[idx].role    = role;
-  EMPLOYEES[idx].isAdmin = (role === 'team_manager' || role === 'superadmin');
+  EMPLOYEES[idx].isAdmin = (role === 'team_manager' || role === 'superadmin' || role === 'admin');
   const emp = EMPLOYEES[idx];
-  const al  = document.getElementById('um-alert');
+  const _alCR2 = document.getElementById('um-alert');
   if(USE_GSHEETS){
     setLoading(true);
     try {
       await apiPost({action:'saveEmployee', employee:emp});
     } catch(e) {
       setLoading(false);
-      al.className='alert alert-err'; al.innerHTML=`❌ GSheets: ${e.message}`; al.style.display='flex';
+      _alCR2.className='alert alert-err'; _alCR2.innerHTML=`❌ GSheets: ${e.message}`; _alCR2.style.display='flex';
       return;
     } finally { setLoading(false); }
   }
   saveEmployees(EMPLOYEES);
   const labels = {superadmin:'👑 Super Admin', team_manager:'🏷 Manager', employee:'👤 Employé'};
-  al.className='alert alert-success';
-  al.innerHTML=`✅ Rôle de <strong>${emp.name}</strong> : ${labels[role]||role}.`;
-  al.style.display='flex';
+  _alCR2.className='alert alert-success';
+  _alCR2.innerHTML=`✅ Rôle de <strong>${emp.name}</strong> : ${labels[role]||role}.`;
+  _alCR2.style.display='flex';
 }
 
 function changeTeam(idx, team){
