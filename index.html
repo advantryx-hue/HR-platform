@@ -250,8 +250,8 @@ textarea{resize:vertical;min-height:80px;}
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Employee</div>
-    <button class="nav-item" onclick="nav('my-requests')"><span class="nav-icon">📋</span><span>My Requests</span></button>
-    <button class="nav-item" onclick="nav('new-request')"><span class="nav-icon">➕</span><span>New Request</span></button>
+    <button class="nav-item" id="nav-my-requests" onclick="nav('my-requests')"><span class="nav-icon">📋</span><span>My Requests</span></button>
+    <button class="nav-item" id="nav-new-request" onclick="nav('new-request')"><span class="nav-icon">➕</span><span>New Request</span></button>
     <div class="nav-section" id="nav-admin-label">HR Admin</div>
     <button class="nav-item" id="nav-dashboard" onclick="nav('dashboard')"><span class="nav-icon">📊</span><span>Dashboard</span></button>
     <button class="nav-item" id="nav-approvals" onclick="nav('approvals')"><span class="nav-icon">✅</span><span>Approvals</span><span class="badge" id="pending-badge">0</span></button>
@@ -259,6 +259,7 @@ textarea{resize:vertical;min-height:80px;}
     <button class="nav-item" id="nav-history" onclick="nav('history')"><span class="nav-icon">📂</span><span>All Requests</span></button>
     <button class="nav-item" id="nav-user-mgmt" onclick="nav('user-mgmt')"><span class="nav-icon">⚙️</span><span>User Management</span></button>
     <button class="nav-item" id="nav-leave-types" onclick="nav('leave-types')"><span class="nav-icon">📝</span><span>Leave Types</span></button>
+    <button class="nav-item" id="nav-sectors" onclick="nav('sectors')"><span class="nav-icon">🏭</span><span>Secteurs</span></button>
     <button class="nav-item" id="nav-team-dash" onclick="nav('team-dash')"><span class="nav-icon">👥</span><span>Team Dashboard</span></button>
   </nav>
   <div class="sidebar-footer">
@@ -290,7 +291,7 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Ref</th><th>Type</th><th>Start</th><th>End</th><th>Days</th><th>Status</th><th>Submitted</th><th>Reason</th></tr></thead>
+          <thead><tr><th>Ref</th><th>Type</th><th>Start</th><th>End</th><th>Days</th><th>Status</th><th>Submitted</th><th>Reason</th><th>Action</th></tr></thead>
           <tbody id="my-tbody"></tbody>
         </table>
       </div>
@@ -349,6 +350,13 @@ textarea{resize:vertical;min-height:80px;}
           <div id="f-quota-check" style="padding:8px 10px;background:var(--surface2);border-radius:var(--rs);font-size:12px;color:var(--text2);">Select dates to check</div>
         </div>
       </div>
+      <div class="form-row" id="f-cert-row" style="display:none;">
+        <div class="form-group full">
+          <label>Certificat médical * <span style="font-weight:400;color:var(--text3);">(obligatoire pour un congé maladie — PDF ou image, 4 Mo max)</span></label>
+          <input type="file" id="f-certificate" accept="application/pdf,image/*" onchange="onCertificateSelected()">
+          <div id="f-cert-status" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
+        </div>
+      </div>
       <div class="form-row">
         <div class="form-group full">
           <label>Reason for leave</label>
@@ -386,6 +394,16 @@ textarea{resize:vertical;min-height:80px;}
         <div class="card-title">Monthly leave days taken</div>
         <canvas id="dash-monthly-chart" height="180" role="img" aria-label="Monthly leave days"></canvas>
       </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">⏱ Demandes de dernière minute (délai d'avance non respecté)</div>
+      <div id="dash-lastmin"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">🩺 Plafond légal congé maladie (5 j/an)</div>
+      <div id="dash-sickcap"></div>
     </div>
 
     <div class="card" style="margin-bottom:1.25rem;">
@@ -611,6 +629,29 @@ textarea{resize:vertical;min-height:80px;}
     </div>
   </div>
 
+  <!-- ── SECTORS / SECTEURS ── -->
+  <div class="panel" id="panel-sectors">
+    <div class="page-title">Secteurs</div>
+    <div class="page-sub">Gérer les secteurs / équipes de l'entreprise (textile, pharma, automobile, commun, …)</div>
+    <div id="sec-alert" style="display:none;margin-bottom:1rem;"></div>
+    <div class="card" style="max-width:680px;margin-bottom:1.25rem;">
+      <div class="card-title">Ajouter un secteur</div>
+      <div class="form-row">
+        <div class="form-group"><label>Libellé *</label><input type="text" id="sec-label" placeholder="Ex: Automobile"></div>
+        <div class="form-group"><label>Emoji</label><input type="text" id="sec-emoji" placeholder="🚗" maxlength="8" style="width:80px;"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Couleur</label><input type="color" id="sec-color" value="#2563eb" style="height:38px;padding:2px 4px;"></div>
+        <div class="form-group"><label>Email du responsable (notifications congés)</label><input type="email" id="sec-manager" placeholder="manager@advantryx.com"></div>
+      </div>
+      <button class="btn btn-primary" onclick="addSector()">➕ Ajouter le secteur</button>
+    </div>
+    <div class="card" style="max-width:680px;">
+      <div class="card-title">Secteurs actifs</div>
+      <div id="sec-list"></div>
+    </div>
+  </div>
+
   <!-- ── TEAM DASHBOARD ── -->
   <div class="panel" id="panel-team-dash">
     <div class="page-title" id="td-title">Team Dashboard</div>
@@ -761,16 +802,10 @@ textarea{resize:vertical;min-height:80px;}
     <!-- Monthly summary table -->
     <div class="card" style="margin-bottom:1.25rem;">
       <div class="card-title" id="cpt-table-title">Récapitulatif mensuel</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">🔴 ligne surlignée = dépassement de quota détecté (congé annuel ou plafond légal congé maladie)</div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr>
-            <th>Employé</th><th>Équipe</th>
-            <th>Congé annuel</th><th>Maladie</th><th>Urgence</th>
-            <th>Non payé</th><th>Comp. Off</th><th>Autre</th>
-            <th style="background:#eff6ff;color:#1d4ed8;">Total jours</th>
-            <th style="background:#f0fdf4;color:#15803d;">Jours payés</th>
-            <th style="background:#fef2f2;color:#991b1b;">Jours non payés</th>
-          </tr></thead>
+          <thead><tr id="cpt-thead-row"></tr></thead>
           <tbody id="cpt-tbody"></tbody>
           <tfoot id="cpt-tfoot" style="font-weight:700;background:var(--surface2);"></tfoot>
         </table>
@@ -843,7 +878,7 @@ textarea{resize:vertical;min-height:80px;}
 // ─────────────────────────────────────────────────────────────
 // CONFIG — set your deployed Apps Script URL here
 // ─────────────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybf7ye78O-N29vPC2XtvrYKYp6DvMq3BbGBIMVwXbC2C-OCh3QUawtG-UNtKhEf88QoA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzGpwmAv7vUDd1BV7ZmwXREOFoPz6AlxiwFMLe0jp_hHF5xT1xws7PqR3hT9eJFBarcCg/exec';
 const USE_GSHEETS = APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/');
 
 // ─── API LAYER ────────────────────────────────────────────────
@@ -899,6 +934,33 @@ const DEFAULT_LEAVE_TYPES = [
 ];
 function getLeaveTypes(){ return JSON.parse(localStorage.getItem('hr_leave_types')||'null') || [...DEFAULT_LEAVE_TYPES]; }
 function saveLeaveTypes(arr){ localStorage.setItem('hr_leave_types', JSON.stringify(arr)); }
+
+// ── Congé maladie : règles légales ──────────────────────────────────────────
+const SICK_LEAVE_LEGAL_CAP = 5; // jours/an, selon la loi
+function isSickLeaveType(typeLabel){
+  const def = getLeaveTypes().find(t=>t.label===typeLabel);
+  if(def && def.id==='sick') return true;
+  // Filet de sécurité : si le type a été ajouté/renommé manuellement (id
+  // généré aléatoirement, ≠ 'sick') ou si d'anciennes demandes portent un
+  // libellé qui n'existe plus dans la config actuelle, on reconnaît quand
+  // même un congé maladie au pattern du libellé plutôt que de perdre
+  // silencieusement la donnée.
+  const s=(typeLabel||'').toLowerCase();
+  return s.includes('maladie') || s.includes('sick');
+}
+function isAnnualLeaveType(typeLabel){
+  const def = getLeaveTypes().find(t=>t.label===typeLabel);
+  if(def && def.id==='annual') return true;
+  const s=(typeLabel||'').toLowerCase();
+  return s.includes('annuel') || s.includes('annual') || s.includes('paid leave');
+}
+// Jours de congé maladie déjà comptabilisés sur l'année (accepted + pending,
+// les rejetés ne comptent pas) — utilisé pour vérifier le plafond légal.
+function sickDaysUsedOrPending(emp, year){
+  return REQUESTS
+    .filter(r=>r.employee===emp && isSickLeaveType(r.type) && r.startDate.startsWith(year) && (r.status||'').toLowerCase()!=='rejected')
+    .reduce((s,r)=>s+parseDays(r.days),0);
+}
 function populateLeaveTypeSelect(selId){
   const sel = document.getElementById(selId); if(!sel) return;
   const cur = sel.value;
@@ -930,13 +992,64 @@ const DEFAULT_EMPLOYEES = [
   {name:"Rami Chabchoub",    email:"r.chabchoub@advantryx.com", isAdmin:false, role:"employee",     team:"pharma",  dob:"",startDate:"",cin:"",salary:"",gradeId:"",priorExpYears:0,education:"",experience:"",cinFile:null},
 ];
 
-// ── Team helpers ────────────────────────────────────────────────────────────
-const TEAM_LABELS  = { textile: '🧵 Textile', pharma: '💊 Pharma', null: '—' };
-const TEAM_COLORS  = { textile: '#0891b2', pharma: '#7c3aed' };
-const TEAM_MANAGERS = {
-  textile : 'a.rekhis@advantryx.com',
-  pharma  : 'k.ayedi@advantryx.com',
-};
+// ── SECTEURS (dynamiques) ───────────────────────────────────────────────────
+// Remplace l'ancien système figé textile/pharma : un secteur = {id,label,emoji,color,managerEmail}
+// Stocké en localStorage ('hr_sectors') + synchronisé sur Google Sheets (tab "sectors").
+const DEFAULT_SECTORS = [
+  { id:'textile', label:'Textile', emoji:'🧵', color:'#0891b2', managerEmail:'a.rekhis@advantryx.com' },
+  { id:'pharma',  label:'Pharma',  emoji:'💊', color:'#7c3aed', managerEmail:'k.ayedi@advantryx.com' },
+];
+function getSectors(){
+  try {
+    const arr = JSON.parse(localStorage.getItem('hr_sectors')||'null');
+    if(Array.isArray(arr) && arr.length) return arr;
+  } catch(e){}
+  return [...DEFAULT_SECTORS];
+}
+function saveSectors(arr){ localStorage.setItem('hr_sectors', JSON.stringify(arr)); }
+function slugifySector(label){
+  return String(label||'').toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // strip accents
+    .replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || ('sector_'+Date.now());
+}
+
+// TEAM_LABELS / TEAM_COLORS / TEAM_MANAGERS sont reconstruits dynamiquement à
+// partir des secteurs configurés, mais on garde les mêmes noms d'objets pour
+// que tous les usages existants (TEAM_LABELS[e.team] etc.) continuent de marcher.
+let TEAM_LABELS  = { null: '—' };
+let TEAM_COLORS  = {};
+let TEAM_MANAGERS = {};
+function rebuildTeamMaps(){
+  TEAM_LABELS = { null: '—' };
+  TEAM_COLORS = {};
+  TEAM_MANAGERS = {};
+  getSectors().forEach(s=>{
+    TEAM_LABELS[s.id]  = (s.emoji ? s.emoji+' ' : '') + s.label;
+    TEAM_COLORS[s.id]  = s.color || '#888';
+    TEAM_MANAGERS[s.id]= s.managerEmail || '';
+  });
+}
+rebuildTeamMaps();
+
+// Met à jour tous les <select> de filtre/assignation de secteur dans l'UI.
+function populateAllTeamSelects(){
+  const sectors = getSectors();
+  const optAll  = '<option value="">Toutes les équipes</option>' + sectors.map(s=>`<option value="${s.id}">${TEAM_LABELS[s.id]}</option>`).join('');
+  const optNone = '<option value="">— Aucune équipe —</option>' + sectors.map(s=>`<option value="${s.id}">${TEAM_LABELS[s.id]}</option>`).join('');
+  ['td-team-filter','perf-team-filter','cpt-team'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const cur=el.value;
+    el.innerHTML=optAll;
+    if([...el.options].some(o=>o.value===cur)) el.value=cur;
+  });
+  const umTeam=document.getElementById('um-team');
+  if(umTeam){
+    const cur=umTeam.value;
+    umTeam.innerHTML=optNone;
+    if([...umTeam.options].some(o=>o.value===cur)) umTeam.value=cur;
+  }
+}
+
 const SUPERADMIN_EMAIL = 'a.bouchaala@advantryx.com';
 
 function getEmpRecord(nameOrEmail){
@@ -947,11 +1060,19 @@ function getEmpRecord(nameOrEmail){
   ) || null;
 }
 
+// Admin et Super Admin ont un accès complet en lecture (tous les congés,
+// tous les secteurs) — seul le Super Admin a en plus les droits d'attribution
+// de rôles superadmin. Utilisé partout où l'ancien code testait uniquement
+// role==='superadmin' pour décider qui voit "tout".
+function isFullAccessRole(session){
+  return !!session && (session.role === 'superadmin' || session.role === 'admin');
+}
+
 // Who should approve requests from a given employee name?
 function getApproverEmail(employeeName){
   const rec = getEmpRecord(employeeName);
   if(!rec) return SUPERADMIN_EMAIL;
-  if(rec.role === 'superadmin' || rec.role === 'team_manager') return SUPERADMIN_EMAIL; // managers approved by superadmin
+  if(rec.role === 'superadmin' || rec.role === 'admin' || rec.role === 'team_manager') return SUPERADMIN_EMAIL; // managers/admins approved by superadmin
   if(rec.team && TEAM_MANAGERS[rec.team]) return TEAM_MANAGERS[rec.team];
   return SUPERADMIN_EMAIL;
 }
@@ -959,11 +1080,23 @@ function getApproverEmail(employeeName){
 // Can the currently logged-in session approve a request for employeeName?
 function canApprove(session, request){
   if(!session) return false;
+  if(session.role === 'superadmin' || session.role === 'admin') return true; // full access roles approve everything
   const myEmail = (session.email||'').toLowerCase();
-  if(myEmail === SUPERADMIN_EMAIL) return true;           // superadmin sees all
   const approver = getApproverEmail(request.employee);
   return myEmail === approver.toLowerCase();
 }
+
+// Emails à notifier systématiquement (Admin(s) + Super Admin) en plus du
+// gestionnaire direct / du demandeur, pour la soumission ET la décision.
+function getAdminNotifyEmails(){
+  const set = new Set();
+  set.add(SUPERADMIN_EMAIL);
+  getEmployees().filter(e=>e.role==='admin').forEach(e=>{
+    if(e.email) set.add(e.email.toLowerCase());
+  });
+  return [...set];
+}
+
 function getEmployeesLocal(){
   const stored = localStorage.getItem('hr_employees');
   if(!stored) return DEFAULT_EMPLOYEES.map(e=>({...e}));
@@ -1194,12 +1327,13 @@ async function doLogin(){
       try {
         user = await apiPost({ action:'login', email, password:pwd });
         // Full sync from Sheets on login
-        const [freshEmps, freshReqs, freshGrades, freshLT, freshPN] = await Promise.all([
+        const [freshEmps, freshReqs, freshGrades, freshLT, freshPN, freshSec] = await Promise.all([
           apiGet('getEmployees'),
           apiGet('getRequests'),
           apiGet('getGrades'),
           apiGet('getLeaveTypes'),
           apiGet('getPerfNotes'),
+          apiGet('getSectors'),
         ]);
         if(freshEmps && freshEmps.length > 0){ saveEmployees(freshEmps); EMPLOYEES = freshEmps; }
         if(freshReqs && freshReqs.length > 0){
@@ -1228,6 +1362,16 @@ async function doLogin(){
             .catch(e => console.warn('GS default leave types sync:', e));
         }
         if(freshPN)     { savePerfNotes(freshPN); }
+        if(freshSec && freshSec.length > 0){
+          saveSectors(freshSec);
+        } else {
+          // Sheet is empty — push default sectors to Sheets
+          const defaultSectors = [...DEFAULT_SECTORS];
+          saveSectors(defaultSectors);
+          Promise.all(defaultSectors.map(s => apiPost({action:'saveSector', sector:s})))
+            .catch(e => console.warn('GS default sectors sync:', e));
+        }
+        rebuildTeamMaps();
       } catch(apiErr) {
         errEl.textContent = apiErr.message;
         errEl.style.display = 'block'; return;
@@ -1247,11 +1391,13 @@ async function doLogin(){
 }
 
 function startSession(user){
+  rebuildTeamMaps();
   currentUser = (user.isAdmin || user.role === 'team_manager') ? user.name : user.name; // always name, role checked via session
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-shell').style.display = 'flex';
   document.getElementById('login-email').value = '';
   document.getElementById('login-password').value = '';
+  populateAllTeamSelects();
 
   // Sidebar user display
   const col = avatarColor(user.name);
@@ -1271,14 +1417,14 @@ function startSession(user){
   const isManager = user.role === 'team_manager';
 
   // Role label in sidebar
-  const roleLabels = { superadmin:'👑 Super Admin', admin:'🔑 Admin', team_manager: user.team ? '🏷 Manager ' + (user.team==='textile'?'Textile':'Pharma') : '🏷 Manager', employee:'👤 Employé', comptable:'📊 Expert Comptable' };
+  const roleLabels = { superadmin:'👑 Super Admin', admin:'🔑 Admin', team_manager: user.team ? '🏷 Manager ' + (TEAM_LABELS[user.team]||user.team) : '🏷 Manager', employee:'👤 Employé', comptable:'📊 Expert Comptable' };
   document.getElementById('sidebar-role').textContent = roleLabels[user.role] || (isAdmin ? '👑 Admin' : '👤 Employé');
 
   // Approvals + history visible to admins and managers
   const isComptable = user.role === 'comptable';
   const canSeeAdmin = isAdmin || isManager || user.role === 'admin';
   const isAdminRole = isSuperAdmin || user.role === 'admin';
-  ['nav-dashboard','nav-employees','nav-history','nav-user-mgmt','nav-leave-types','nav-admin-label'].forEach(id=>{
+  ['nav-dashboard','nav-employees','nav-history','nav-user-mgmt','nav-leave-types','nav-sectors','nav-admin-label'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.style.display = isAdminRole ? '' : 'none';
   });
@@ -1290,8 +1436,9 @@ function startSession(user){
   const navComptable = document.getElementById('nav-comptable');
   if(navComptable) navComptable.style.display = (isComptable || isSuperAdmin) ? '' : 'none';
   if(isComptable){
-    // Hide all other panels nav
-    ['nav-dashboard','nav-approvals','nav-team-dash','nav-perf','nav-employees','nav-history','nav-user-mgmt','nav-leave-types','nav-admin-label'].forEach(id=>{
+    // Hide all other panels nav — l'expert comptable n'est pas membre d'une
+    // équipe et ne doit pas pouvoir soumettre/consulter ses propres congés.
+    ['nav-dashboard','nav-approvals','nav-team-dash','nav-perf','nav-employees','nav-history','nav-user-mgmt','nav-leave-types','nav-sectors','nav-admin-label','nav-my-requests','nav-new-request'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.style.display='none';
     });
   }
@@ -1315,12 +1462,74 @@ function doLogout(){
 })();
 
 // ─── QUOTA HELPERS ───────────────────────────────────────────
-function accrued(year){
+// accrued(year, empOrName) — quota acquis pour une année donnée, proratisé
+// selon la date d'embauche. L'accrual d'un mois n'est crédité qu'à la FIN
+// de ce mois (ex: embauché en mai 2026 → au 30/06/2026 il a 2 mois acquis
+// = mai (crédité le 31/05) + juin (crédité le 30/06) = 2 × 1.83 j).
+// empOrName est optionnel — si absent ou sans startDate connue, on retombe
+// sur l'ancien comportement (employé supposé présent toute l'année).
+// asOfMonthIdx (0-11, optionnel) : calcule le quota acquis jusqu'à la FIN de
+// ce mois précis dans l'année `year`, au lieu de "aujourd'hui" — utilisé par
+// le suivi mensuel comptable (savoir quand un employé a dépassé son quota).
+// Date de référence pour le calcul du quota acquis dans l'année `year`.
+// - Sans asOfMonthIdx : "aujourd'hui" pour l'année en cours, fin d'année pour
+//   une année révolue, null pour une année future.
+// - Avec asOfMonthIdx (0-11) : si ce mois n'est PAS encore terminé (mois en
+//   cours ou futur dans l'année en cours), la référence est "aujourd'hui"
+//   (le mois sélectionné n'est donc pas crédité tant qu'il n'est pas fini —
+//   pour juin, le quota ne compte que mai = N-1 mois). Si ce mois est déjà
+//   entièrement passé, la référence est la fin de ce mois.
+function cptRefDate(year, asOfMonthIdx){
   const now = new Date();
+  const y   = parseInt(year);
+  const hasAsOf = (asOfMonthIdx !== undefined && asOfMonthIdx !== null);
+
+  if(hasAsOf){
+    if(y > now.getFullYear()) return null;
+    if(y === now.getFullYear() && asOfMonthIdx >= now.getMonth()) return new Date(y, now.getMonth(), now.getDate());
+    return new Date(y, asOfMonthIdx, new Date(y, asOfMonthIdx + 1, 0).getDate()); // fin du mois choisi (déjà passé)
+  }
+  if(y < now.getFullYear()) return new Date(y, 11, 31);
+  if(y > now.getFullYear()) return null;
+  return new Date(y, now.getMonth(), now.getDate());
+}
+
+function accrued(year, empOrName, asOfMonthIdx){
   const y = parseInt(year);
-  if(now.getFullYear() > y) return Math.round(QUOTA_PER_MONTH * 12 * 10)/10;
-  if(now.getFullYear() < y) return 0;
-  return Math.round(QUOTA_PER_MONTH * (now.getMonth()+1) * 10)/10;
+  const refDate = cptRefDate(year, asOfMonthIdx);
+  if(!refDate) return 0;
+  const refM = refDate.getMonth(), refD = refDate.getDate();
+
+  let hireDate = null;
+  if(empOrName){
+    const rec = (typeof empOrName === 'string') ? getEmpRecord(empOrName) : empOrName;
+    if(rec && rec.startDate){
+      const hd = new Date(rec.startDate + 'T00:00:00');
+      if(!isNaN(hd.getTime())) hireDate = hd;
+    }
+  }
+
+  // Pas de date d'embauche connue → comportement historique (employé
+  // considéré présent depuis le début de l'année `year`), mais en respectant
+  // la même règle : un mois n'est crédité qu'une fois terminé.
+  if(!hireDate){
+    const lastDayOfRefMonth = new Date(y, refM + 1, 0).getDate();
+    const months = refM + (refD >= lastDayOfRefMonth ? 1 : 0);
+    return Math.round(QUOTA_PER_MONTH * months * 10) / 10;
+  }
+
+  const hireY = hireDate.getFullYear();
+  const hireM = hireDate.getMonth(); // 0-indexed
+  if(y < hireY) return 0; // pas encore embauché cette année-là
+
+  const startMonth = (y === hireY) ? hireM : 0;
+  if(refM < startMonth) return 0; // embauché après la date de référence
+
+  const lastDayOfRefMonth = new Date(y, refM + 1, 0).getDate();
+  let months = (refM - startMonth) + (refD >= lastDayOfRefMonth ? 1 : 0);
+  months = Math.max(0, months);
+
+  return Math.round(QUOTA_PER_MONTH * months * 10) / 10;
 }
 
 // Safely parse the days field — handles "1/2", "Half Day", "0,5", numbers, etc.
@@ -1355,7 +1564,11 @@ function nav(page){
     if(_s.role==='comptable'){ nav('comptable'); return; }
     renderMyRequests('all');
   }
-  if(page==='new-request'){ populateLeaveTypeSelect('f-type'); setupForm(); }
+  if(page==='new-request'){
+    const _s=JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+    if(_s.role==='comptable'){ nav('comptable'); return; }
+    populateLeaveTypeSelect('f-type'); setupForm();
+  }
   if(page==='dashboard'){
     // Reset year select to current year each time dashboard opens
     const sel = document.getElementById('dash-year');
@@ -1369,6 +1582,7 @@ function nav(page){
   if(page==='change-password'){ ['pwd-current','pwd-new','pwd-confirm'].forEach(id=>document.getElementById(id).value=''); document.getElementById('pwd-alert').style.display='none'; }
   if(page==='user-mgmt') renderUserMgmt();
   if(page==='leave-types') renderLeaveTypes();
+  if(page==='sectors') renderSectors();
   if(page==='salary-grid') renderSalaryGrid();
   if(page==='team-dash') renderTeamDash();
   if(page==='perf') renderPerfPanel();
@@ -1394,6 +1608,12 @@ function statusPill(s){
   const labels={accepted:'Accepted',rejected:'Rejected',pending:'En attente'};
   return `<span class="pill pill-${s}">${labels[s]||s}</span>`;
 }
+function certBadge(r){
+  if(!isSickLeaveType(r.type)) return '';
+  return r.certificateUrl
+    ? `<a href="${r.certificateUrl}" target="_blank" rel="noopener" title="Certificat médical joint" style="margin-left:4px;text-decoration:none;">📎</a>`
+    : `<span title="Certificat médical manquant" style="margin-left:4px;color:var(--red);">⚠</span>`;
+}
 function fmtDate(d){return d?d.substring(0,10):'';}
 
 // ─── MY REQUESTS ─────────────────────────────────────────────
@@ -1409,7 +1629,7 @@ function renderMyRequests(yr='all'){
   const quotaYear = (yr==='all') ? new Date().getFullYear().toString() : yr;
   document.getElementById('my-quota-year').textContent = quotaYear;
   const used = usedDays(name, quotaYear);   // ALL accepted types, sum of days
-  const acc  = accrued(quotaYear);
+  const acc  = accrued(quotaYear, myRec || name);
   const rem  = Math.max(0, acc - used);
   const pct  = acc > 0 ? Math.min(100, used / acc * 100) : 0;
   document.getElementById('my-quota-content').innerHTML = `
@@ -1438,14 +1658,15 @@ function renderMyRequests(yr='all'){
   document.getElementById('my-tbody').innerHTML = rows.length ? rows.map(r=>`
     <tr>
       <td style="font-weight:500;color:var(--blue);font-size:11px;">${r.id}</td>
-      <td>${typePill(r.type)}</td>
+      <td>${typePill(r.type)}${certBadge(r)}</td>
       <td>${fmtDate(r.startDate)} <span style="font-size:10px;background:var(--surface2);color:var(--text3);padding:1px 5px;border-radius:4px;">${(r.startDate||'').substring(0,4)}</span></td>
       <td>${fmtDate(r.endDate)}</td>
       <td><strong>${r.days}</strong></td>
       <td>${statusPill(r.status)}</td>
       <td style="color:var(--text3);font-size:11px;">${fmtDate(r.submittedAt)}</td>
       <td style="color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.reason||'—'}</td>
-    </tr>`).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:1.5rem;">No requests found</td></tr>';
+      <td>${(r.status||'').toLowerCase()==='pending'?`<button class="btn btn-ghost btn-sm" onclick="openDetail('${r.id}')">✏️ Modifier</button>`:`<button class="btn btn-ghost btn-sm" onclick="openDetail('${r.id}')">Voir</button>`}</td>
+    </tr>`).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:1.5rem;">No requests found</td></tr>';
 }
 
 // ─── FORM ────────────────────────────────────────────────────
@@ -1459,6 +1680,60 @@ function setupForm(){
   calcDays();
 }
 
+// Renvoie {isLastMinute, advDays, deadlineStr} pour un type de congé donné
+// et une date de début, comparé à "maintenant" (date de soumission).
+function checkAdvanceNotice(typeLabel, startDateStr){
+  const leaveTypeDef = getLeaveTypes().find(t => t.label === typeLabel);
+  const advDays = leaveTypeDef?.advanceDays || 0;
+  if(advDays <= 0 || !startDateStr) return {isLastMinute:false, advDays:0, deadlineStr:''};
+  const startDate = new Date(startDateStr); startDate.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diffDays = Math.ceil((startDate - today) / 86400000);
+  const deadline = new Date(startDate); deadline.setDate(deadline.getDate() - advDays);
+  const fmt2 = d => d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  return {isLastMinute: diffDays < advDays, advDays, deadlineStr: fmt2(deadline)};
+}
+
+// ── Certificat médical (congé maladie) ──────────────────────────────────────
+let pendingCertificate = null; // { base64, filename, mimeType, sizeKB }
+const CERT_MAX_BYTES = 4 * 1024 * 1024; // 4 Mo
+
+function onCertificateSelected(){
+  const input = document.getElementById('f-certificate');
+  const statusEl = document.getElementById('f-cert-status');
+  const file = input.files && input.files[0];
+  pendingCertificate = null;
+  if(!file){ statusEl.textContent = ''; return; }
+  if(file.size > CERT_MAX_BYTES){
+    statusEl.innerHTML = `<span style="color:var(--red)">⚠ Fichier trop volumineux (${(file.size/1024/1024).toFixed(1)} Mo). Maximum 4 Mo.</span>`;
+    input.value = '';
+    return;
+  }
+  statusEl.innerHTML = `<span style="color:var(--text2)">⏳ Lecture du fichier…</span>`;
+  const reader = new FileReader();
+  reader.onload = function(){
+    const base64 = String(reader.result).split(',')[1] || '';
+    pendingCertificate = { base64, filename: file.name, mimeType: file.type || 'application/octet-stream', sizeKB: Math.round(file.size/1024) };
+    statusEl.innerHTML = `<span style="color:var(--green)">✓ ${file.name} (${pendingCertificate.sizeKB} Ko) prêt à être joint</span>`;
+  };
+  reader.onerror = function(){
+    statusEl.innerHTML = `<span style="color:var(--red)">⚠ Erreur de lecture du fichier.</span>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Calcule le nombre de jours ouvrés entre deux dates (incl.), selon le format.
+function computeBusinessDays(s, e, fmt){
+  if(!s||!e) return 0;
+  const start = new Date(s), end = new Date(e);
+  let days = 0;
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const dw=d.getDay(); if(dw!==0&&dw!==6) days++;
+  }
+  if(fmt==='half-am'||fmt==='half-pm') days=Math.max(0.5,days*0.5);
+  return days;
+}
+
 function calcDays(){
   const s   = document.getElementById('f-start').value;
   const e   = document.getElementById('f-end').value;
@@ -1466,45 +1741,53 @@ function calcDays(){
   const typ = document.getElementById('f-type').value;
   const qEl = document.getElementById('f-quota-check');
 
+  // Show/hide medical certificate field
+  const isSick = isSickLeaveType(typ);
+  const certRow = document.getElementById('f-cert-row');
+  if(certRow) certRow.style.display = isSick ? '' : 'none';
+  if(!isSick){
+    pendingCertificate = null;
+    const fc = document.getElementById('f-certificate'); if(fc) fc.value='';
+    const fcs = document.getElementById('f-cert-status'); if(fcs) fcs.textContent='';
+  }
+
   if(!s||!e){ document.getElementById('f-days').value=''; return; }
 
-  // ── Advance notice rule (per leave type, in calendar days) ───────────────
-  const leaveTypeDef = getLeaveTypes().find(t => t.label === typ);
-  const advDays = leaveTypeDef?.advanceDays || 0;
-  if(advDays > 0){
-    const startDate  = new Date(s);
-    startDate.setHours(0,0,0,0);
-    const today = new Date(); today.setHours(0,0,0,0);
-    const diffDays   = Math.ceil((startDate - today) / 86400000);
-    if(diffDays < advDays){
-      const deadline = new Date(startDate);
-      deadline.setDate(deadline.getDate() - advDays);
-      const fmt2 = d => d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
-      qEl.innerHTML = `<span style="color:var(--red)">⛔ Ce type de congé nécessite <strong>${advDays} jour(s)</strong> d'avance minimum.<br>Date limite de soumission : <strong>${fmt2(deadline)}</strong>.</span>`;
-      document.getElementById('f-days').value = '';
-      return;
-    }
-  }
-
-  const start = new Date(s), end = new Date(e);
-  let days = 0;
-  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    const dw=d.getDay(); if(dw!==0&&dw!==6) days++;
-  }
-  if(fmt==='half-am'||fmt==='half-pm') days=Math.max(0.5,days*0.5);
+  const days = computeBusinessDays(s, e, fmt);
   document.getElementById('f-days').value=days;
 
-  // Quota check
+  // ── Quota check ────────────────────────────────────────────────────────
   const name = currentUser;
   const yr   = s.substring(0,4);
   const used = usedDays(name, yr);
-  const acc  = accrued(yr);
+  const acc  = accrued(yr, name);
   const after= used + days;
+  let quotaMsg;
   if(after>acc){
-    qEl.innerHTML=`<span style="color:var(--red)">⚠ Quota dépassé : ${used.toFixed(1)}+${days}=${after.toFixed(1)} vs ${acc.toFixed(1)} acquis</span>`;
+    quotaMsg = `<span style="color:var(--red)">⚠ Quota dépassé : ${used.toFixed(1)}+${days}=${after.toFixed(1)} vs ${acc.toFixed(1)} acquis</span>`;
   } else {
-    qEl.innerHTML=`<span style="color:var(--green)">✓ Dans le quota : ${used.toFixed(1)}+${days}=${after.toFixed(1)} / ${acc.toFixed(1)} acquis</span>`;
+    quotaMsg = `<span style="color:var(--green)">✓ Dans le quota : ${used.toFixed(1)}+${days}=${after.toFixed(1)} / ${acc.toFixed(1)} acquis</span>`;
   }
+
+  // ── Plafond légal congé maladie (5j/an) ──────────────────────────────────
+  let sickMsg = '';
+  if(isSick){
+    const sickUsed = sickDaysUsedOrPending(name, yr);
+    const sickAfter = sickUsed + days;
+    if(sickAfter > SICK_LEAVE_LEGAL_CAP){
+      sickMsg = `<div style="margin-top:4px;"><span style="color:var(--red)">⛔ Plafond légal de congé maladie dépassé : ${sickUsed.toFixed(1)}+${days}=${sickAfter.toFixed(1)} j vs ${SICK_LEAVE_LEGAL_CAP} j/an autorisés par la loi. La demande ne pourra pas être soumise au-delà de ce plafond.</span></div>`;
+    } else {
+      sickMsg = `<div style="margin-top:4px;"><span style="color:var(--text2)">🩺 Congé maladie : ${sickUsed.toFixed(1)}+${days}=${sickAfter.toFixed(1)} / ${SICK_LEAVE_LEGAL_CAP} j légaux utilisés cette année.</span></div>`;
+    }
+  }
+
+  // ── Advance notice rule (per leave type) — flag only, never blocks ──────
+  const adv = checkAdvanceNotice(typ, s);
+  let advMsg = '';
+  if(adv.isLastMinute){
+    advMsg = `<div style="margin-top:4px;"><span style="color:var(--amber)">⏱ Demande de dernière minute : ce type de congé recommande <strong>${adv.advDays} jour(s)</strong> d'avance (limite habituelle : ${adv.deadlineStr}). La demande sera marquée comme "dernière minute" pour le suivi.</span></div>`;
+  }
+  qEl.innerHTML = quotaMsg + sickMsg + advMsg;
 }
 
 function resetForm(){
@@ -1513,6 +1796,10 @@ function resetForm(){
   document.getElementById('f-days').value='';
   document.getElementById('f-quota-check').innerHTML='Select dates to check';
   document.getElementById('form-alert').style.display='none';
+  const fc = document.getElementById('f-certificate'); if(fc) fc.value='';
+  const fcs = document.getElementById('f-cert-status'); if(fcs) fcs.textContent='';
+  const certRow = document.getElementById('f-cert-row'); if(certRow) certRow.style.display='none';
+  pendingCertificate = null;
 }
 
 function genId(){
@@ -1537,17 +1824,59 @@ function submitRequest(){
   if(!type||!start||!end||!days){
     alertEl.className='alert alert-err';alertEl.innerHTML='⚠ Please fill all required fields.';alertEl.style.display='flex';return;
   }
+
+  const isSick = isSickLeaveType(type);
+  const yr = start.substring(0,4);
+
+  // ── Congé maladie : certificat médical obligatoire ──────────────────────
+  if(isSick && !pendingCertificate){
+    alertEl.className='alert alert-err';
+    alertEl.innerHTML='⚠ Un certificat médical est obligatoire pour une demande de congé maladie.';
+    alertEl.style.display='flex';
+    return;
+  }
+  // ── Congé maladie : plafond légal (5j/an) ────────────────────────────────
+  if(isSick){
+    const sickAfter = sickDaysUsedOrPending(name, yr) + days;
+    if(sickAfter > SICK_LEAVE_LEGAL_CAP){
+      alertEl.className='alert alert-err';
+      alertEl.innerHTML=`⛔ Plafond légal de congé maladie dépassé (${sickAfter.toFixed(1)} / ${SICK_LEAVE_LEGAL_CAP} j autorisés cette année). Contactez les RH pour les jours au-delà du plafond légal.`;
+      alertEl.style.display='flex';
+      return;
+    }
+  }
+
   const dayLabels={full:'Full day','half-am':'Half Day – Morning','half-pm':'Half Day – Afternoon'};
+  const adv = checkAdvanceNotice(type, start);
   const req={
     id:genId(),employee:name,email,type,startDate:start,endDate:end,
     dayType:dayLabels[dayfmt],days,reason,status:'pending',
-    submittedAt:new Date().toISOString()
+    submittedAt:new Date().toISOString(),
+    lastMinute: adv.isLastMinute,
+    certificateName: isSick && pendingCertificate ? pendingCertificate.filename : '',
+    certificateUrl: ''
   };
   REQUESTS.push(req);save();
-  if(USE_GSHEETS){ apiPost({action:'saveRequest',request:req}).catch(e=>console.warn('GS sync:',e)); }
+  const approverEmail = getApproverEmail(name);
+  if(USE_GSHEETS){
+    apiPost({
+      action:'saveRequest',
+      request:req,
+      certificateFile: isSick && pendingCertificate ? pendingCertificate : null,
+      notify:{ kind:'submitted', approverEmail, employeeName:name, adminEmails: getAdminNotifyEmails() }
+    }).then(res=>{
+      if(res && res.certificateUrl){
+        const r = REQUESTS.find(x=>x.id===req.id);
+        if(r){ r.certificateUrl = res.certificateUrl; r.certificateName = res.certificateName||r.certificateName; save(); }
+      }
+    }).catch(e=>console.warn('GS sync:',e));
+  }
   alertEl.className='alert alert-success';
-  alertEl.innerHTML=`✅ Request <strong>${req.id}</strong> submitted successfully! Awaiting HR approval.`;
+  alertEl.innerHTML = adv.isLastMinute
+    ? `✅ Request <strong>${req.id}</strong> submitted! ⏱ <span style="color:var(--amber)">Marquée "dernière minute"</span> — Awaiting HR approval.`
+    : `✅ Request <strong>${req.id}</strong> submitted successfully! Awaiting HR approval.`;
   alertEl.style.display='flex';
+  pendingCertificate = null;
   resetForm();
   updatePendingBadge();
 }
@@ -1556,7 +1885,7 @@ function submitRequest(){
 function renderDashboard(){
   REQUESTS=normalizeReqs(JSON.parse(localStorage.getItem('hr_requests')||'[]'));
   const _sess = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
-  const isSA  = _sess.role === 'superadmin';
+  const isSA  = isFullAccessRole(_sess);
   // dynamic year select
   const _ddSel=document.getElementById('dash-year');
   if(_ddSel){
@@ -1577,13 +1906,64 @@ function renderDashboard(){
   const totalDays = accepted.reduce((s,r)=>s+parseDays(r.days),0);
   const pending = REQUESTS.filter(r=>(r.status||'').toLowerCase()==='pending').length;
   const annualDays = accepted.filter(r=>r.type==='Paid Leave (Annual)').reduce((s,r)=>s+parseDays(r.days),0);
-  const sickDays = accepted.filter(r=>r.type==='Sick Leave').reduce((s,r)=>s+parseDays(r.days),0);
+  const sickDays = accepted.filter(r=>isSickLeaveType(r.type)).reduce((s,r)=>s+parseDays(r.days),0);
+  const lastMinReqs = filtered.filter(r=>r.lastMinute===true);
 
   document.getElementById('dash-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Total days taken</div><div class="metric-val mv-blue">${totalDays.toFixed(1)}</div><div class="metric-sub">${accepted.length} requests accepted</div></div>
     <div class="metric"><div class="metric-label">Annual leave</div><div class="metric-val mv-amber">${annualDays.toFixed(1)}</div><div class="metric-sub">jours payés annuel</div></div>
     <div class="metric"><div class="metric-label">Sick leave</div><div class="metric-val mv-purple">${sickDays.toFixed(1)}</div><div class="metric-sub">jours maladie</div></div>
-    <div class="metric"><div class="metric-label">En attente</div><div class="metric-val mv-red">${pending}</div><div class="metric-sub">à valider</div></div>`;
+    <div class="metric"><div class="metric-label">En attente</div><div class="metric-val mv-red">${pending}</div><div class="metric-sub">à valider</div></div>
+    <div class="metric"><div class="metric-label">Dernière minute</div><div class="metric-val" style="color:var(--amber)">${lastMinReqs.length}</div><div class="metric-sub">délai d'avance non respecté</div></div>`;
+
+  // Last-minute requests detail card
+  const lmEl = document.getElementById('dash-lastmin');
+  if(lmEl){
+    if(!lastMinReqs.length){
+      lmEl.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:8px;">Aucune demande de dernière minute sur la période sélectionnée.</div>`;
+    } else {
+      const lt = getLeaveTypes();
+      lmEl.innerHTML = `<table style="width:100%;font-size:12px;">
+        <thead><tr style="color:var(--text3);text-align:left;"><th style="padding:4px 6px;">Employé</th><th>Type</th><th>Délai requis</th><th>Soumis</th><th>Début congé</th><th>Statut</th></tr></thead>
+        <tbody>${[...lastMinReqs].sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt)).map(r=>{
+          const adv = lt.find(t=>t.label===r.type)?.advanceDays || 0;
+          return `<tr style="border-top:1px solid var(--border);">
+            <td style="padding:4px 6px;">${r.employee}</td>
+            <td>${typePill(r.type)}${certBadge(r)}</td>
+            <td>${adv} j</td>
+            <td style="color:var(--text2);">${fmtDate(r.submittedAt)}</td>
+            <td style="color:var(--text2);">${fmtDate(r.startDate)}</td>
+            <td>${statusPill(r.status)}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
+    }
+  }
+
+  // Sick-leave legal cap tracking card (5j/an, indépendant du filtre d'année — toujours année en cours)
+  const scEl = document.getElementById('dash-sickcap');
+  if(scEl){
+    const curYear = String(new Date().getFullYear());
+    const sickEmps = (isSA ? getEmployees() : getEmployees().filter(e=>e.team===_sess.team))
+      .map(e=>({ name:e.name, used: sickDaysUsedOrPending(e.name, curYear) }))
+      .filter(e=>e.used>0)
+      .sort((a,b)=>b.used-a.used);
+    if(!sickEmps.length){
+      scEl.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:8px;">Aucun congé maladie enregistré pour ${curYear}.</div>`;
+    } else {
+      scEl.innerHTML = sickEmps.map(e=>{
+        const pct = Math.min(100, e.used/SICK_LEAVE_LEGAL_CAP*100);
+        const over = e.used > SICK_LEAVE_LEGAL_CAP;
+        const color = over ? 'var(--red)' : pct>80 ? 'var(--amber)' : 'var(--blue)';
+        return `<div class="quota-row">
+          <div class="quota-name">${e.name}</div>
+          <div class="quota-bar-wrap"><div class="quota-bar" style="width:${pct}%;background:${color};"></div></div>
+          <div class="quota-label">${e.used.toFixed(1)} / ${SICK_LEAVE_LEGAL_CAP} j</div>
+          ${over?`<div class="quota-over">+${(e.used-SICK_LEAVE_LEGAL_CAP).toFixed(1)} DÉPASSÉ</div>`:''}
+        </div>`;
+      }).join('');
+    }
+  }
 
   // By type
   const typeMap={};
@@ -1642,10 +2022,10 @@ function renderDashboard(){
 
   // Quota bars — use current year when "all" is selected
   const empYear = yr==='all' ? String(new Date().getFullYear()) : yr;
-  const acc = accrued(empYear);
   const _dashEmps = isSA ? getEmployees() : getEmployees().filter(e=>e.team===_sess.team);
   const quotaRows=_dashEmps.map(e=>{
     const u=usedDays(e.name,empYear);   // ALL accepted types
+    const acc=accrued(empYear,e);
     const pct=acc?Math.min(100,u/acc*100):0;
     const over=u>acc;
     const color=over?'var(--red)':pct>80?'var(--amber)':'var(--blue)';
@@ -1725,12 +2105,12 @@ function renderApprovals(){
           <div><span style="font-weight:500;">${r.employee}</span><br>${teamLabel}</div>
         </div>
       </td>
-      <td>${typePill(r.type)}</td>
+      <td>${typePill(r.type)}${certBadge(r)}</td>
       <td>${fmtDate(r.startDate)}</td>
       <td>${fmtDate(r.endDate)}</td>
       <td><strong>${r.days}</strong></td>
       <td style="color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.reason||'—'}</td>
-      <td style="color:var(--text3);font-size:11px;">${fmtDate(r.submittedAt)}</td>
+      <td style="color:var(--text3);font-size:11px;">${fmtDate(r.submittedAt)} ${r.lastMinute?'<span title="Demande de dernière minute" style="color:var(--amber);">⏱</span>':''}</td>
       <td>
         <div class="action-group">
           <button class="btn btn-success btn-sm" onclick="act('${r.id}','accepted')">✓ Accepter</button>
@@ -1745,8 +2125,12 @@ function act(id, status){
   const r=REQUESTS.find(x=>x.id===id);
   if(r){r.status=status.toLowerCase();r.reviewedAt=new Date().toISOString();save();}
   if(USE_GSHEETS){
-    apiPost({action:'updateRequest',id,updates:{status:status.toLowerCase(),reviewedAt:r?.reviewedAt||''}})
-      .catch(e=>console.warn('Sheets sync:',e));
+    apiPost({
+      action:'updateRequest',
+      id,
+      updates:{status:status.toLowerCase(),reviewedAt:r?.reviewedAt||''},
+      notify: r ? { kind:'reviewed', employeeEmail:r.email, employeeName:r.employee, status:status.toLowerCase(), adminEmails: getAdminNotifyEmails() } : null
+    }).catch(e=>console.warn('Sheets sync:',e));
   }
   renderApprovals();updatePendingBadge();
   setTimeout(()=>{
@@ -1760,9 +2144,9 @@ function act(id, status){
 // ─── EMPLOYEES ───────────────────────────────────────────────
 function renderEmployees(){
   const yr=document.getElementById('emp-year').value;
-  const acc=accrued(yr);
   document.getElementById('emp-grid').innerHTML=EMPLOYEES.map(e=>{
     const used = usedDays(e.name, yr);   // ALL accepted types, sum of days field
+    const acc  = accrued(yr, e);
     const sick = usedDays(e.name, yr, ['Congé maladie']);
     const pct  = acc ? Math.min(100, used / acc * 100) : 0;
     const over = used > acc;
@@ -1797,7 +2181,7 @@ function renderEmployees(){
 // ─── HISTORY ─────────────────────────────────────────────────
 function renderHistory(){
   const _sess = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
-  const isSA  = _sess.role === 'superadmin';
+  const isSA  = isFullAccessRole(_sess);
   const q=(document.getElementById('hist-search').value||'').toLowerCase();
   const st=document.getElementById('hist-status').value;
   const yr=document.getElementById('hist-year').value;
@@ -1823,13 +2207,13 @@ function renderHistory(){
           <span>${r.employee}</span>
         </div>
       </td>
-      <td>${typePill(r.type)}</td>
+      <td>${typePill(r.type)}${certBadge(r)}</td>
       <td>${fmtDate(r.startDate)}</td>
       <td>${fmtDate(r.endDate)}</td>
       <td><strong>${r.days}</strong></td>
       <td>${statusPill(r.status)}</td>
       <td style="color:var(--text2);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.reason||'—'}</td>
-      <td style="color:var(--text3);font-size:11px;">${fmtDate(r.submittedAt)}</td>
+      <td style="color:var(--text3);font-size:11px;">${fmtDate(r.submittedAt)} ${r.lastMinute?'<span title="Demande de dernière minute" style="color:var(--amber);">⏱</span>':''}</td>
       <td>
         ${(r.status||'').toLowerCase()==='pending'?`<div class="action-group">
           <button class="btn btn-success btn-sm" onclick="act('${r.id}','accepted');renderHistory()">✓</button>
@@ -1844,26 +2228,158 @@ function openDetail(id){
   const r=REQUESTS.find(x=>x.id===id);
   if(!r) return;
   currentModal=id;
+  const session = JSON.parse(sessionStorage.getItem('hr_session')||'{}');
+  const isPending = (r.status||'').toLowerCase()==='pending';
+  const isOwner   = (session.email||'').toLowerCase() === (r.email||'').toLowerCase();
+  const canManage = canApprove(session, r); // admin / superadmin / team manager concerné
+  // Édition complète (type + dates + format) : le demandeur lui-même OU un
+  // gestionnaire habilité, tant que la demande est encore en attente.
+  const canEditFull = isPending && (isOwner || canManage);
+  // Correction du type seul, possible par un gestionnaire même après validation.
+  const canEditTypeOnly = !canEditFull && canManage;
+
+  const lt = getLeaveTypes();
+  const typeOptions = lt.map(t=>`<option value="${t.label}" ${t.label===r.type?'selected':''}>${t.label}</option>`).join('');
+  const dayFmtRev = {'Full day':'full','Half Day – Morning':'half-am','Half Day – Afternoon':'half-pm'};
+
   document.getElementById('modal-ref').textContent=r.id+' — '+r.employee;
-  document.getElementById('modal-body').innerHTML=`
-    <table style="width:100%;font-size:13px;">
-      <tr><td style="color:var(--text3);padding:6px 0;width:140px;">Type</td><td>${typePill(r.type)}</td></tr>
-      <tr><td style="color:var(--text3);padding:6px 0;">Status</td><td>${statusPill(r.status)}</td></tr>
+
+  let typeCell, datesCell;
+  if(canEditFull){
+    typeCell = `<select id="modal-type-select" style="font-size:12px;padding:4px 6px;">${typeOptions}</select>`;
+    datesCell = `
+      <tr><td style="color:var(--text3);padding:6px 0;">Start date</td><td><input type="date" id="modal-start" value="${r.startDate}" style="font-size:12px;padding:4px 6px;"></td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">End date</td><td><input type="date" id="modal-end" value="${r.endDate}" style="font-size:12px;padding:4px 6px;"></td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Day format</td><td>
+        <select id="modal-dayfmt" style="font-size:12px;padding:4px 6px;">
+          <option value="full" ${(dayFmtRev[r.dayType]||'full')==='full'?'selected':''}>Full day</option>
+          <option value="half-am" ${dayFmtRev[r.dayType]==='half-am'?'selected':''}>Half Day – Morning</option>
+          <option value="half-pm" ${dayFmtRev[r.dayType]==='half-pm'?'selected':''}>Half Day – Afternoon</option>
+        </select>
+      </td></tr>`;
+  } else {
+    typeCell = canEditTypeOnly
+      ? `<div style="display:flex;gap:6px;align-items:center;"><select id="modal-type-select" style="font-size:12px;padding:4px 6px;">${typeOptions}</select><button class="btn btn-ghost btn-sm" onclick="changeRequestType('${r.id}')">Modifier</button></div>`
+      : typePill(r.type);
+    datesCell = `
       <tr><td style="color:var(--text3);padding:6px 0;">Start date</td><td>${fmtDate(r.startDate)}</td></tr>
       <tr><td style="color:var(--text3);padding:6px 0;">End date</td><td>${fmtDate(r.endDate)}</td></tr>
-      <tr><td style="color:var(--text3);padding:6px 0;">Day format</td><td>${r.dayType||'—'}</td></tr>
-      <tr><td style="color:var(--text3);padding:6px 0;">Days requested</td><td><strong>${r.days}</strong></td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Day format</td><td>${r.dayType||'—'}</td></tr>`;
+  }
+
+  document.getElementById('modal-body').innerHTML=`
+    <div id="modal-edit-alert" style="display:none;margin-bottom:0.75rem;"></div>
+    <table style="width:100%;font-size:13px;">
+      <tr><td style="color:var(--text3);padding:6px 0;width:140px;">Type</td><td>${typeCell}</td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Status</td><td>${statusPill(r.status)}</td></tr>
+      ${datesCell}
+      <tr><td style="color:var(--text3);padding:6px 0;">Days requested</td><td><strong id="modal-days-display">${r.days}</strong>${canEditFull?' <span style="color:var(--text3);font-size:11px;">(recalculé à la sauvegarde)</span>':''}</td></tr>
+      ${isSickLeaveType(r.type) ? `<tr><td style="color:var(--text3);padding:6px 0;">Certificat médical</td><td>${r.certificateUrl?`<a href="${r.certificateUrl}" target="_blank" rel="noopener">📎 ${r.certificateName||'Voir le certificat'}</a>`:'<span style="color:var(--amber);">⚠ Aucun certificat joint</span>'}</td></tr>` : ''}
       <tr><td style="color:var(--text3);padding:6px 0;">Reason</td><td>${r.reason||'—'}</td></tr>
-      <tr><td style="color:var(--text3);padding:6px 0;">Submitted</td><td>${r.submittedAt?r.submittedAt.substring(0,16).replace('T',' '):''}</td></tr>
+      <tr><td style="color:var(--text3);padding:6px 0;">Submitted</td><td>${r.submittedAt?r.submittedAt.substring(0,16).replace('T',' '):''} ${r.lastMinute?'<span style="color:var(--red);font-weight:600;font-size:11px;">⏱ Demande de dernière minute</span>':''}</td></tr>
       ${r.reviewedAt?`<tr><td style="color:var(--text3);padding:6px 0;">Reviewed</td><td>${r.reviewedAt.substring(0,16).replace('T',' ')}</td></tr>`:''}
     </table>
+    ${canEditFull?`<div style="margin-top:1rem;"><button class="btn btn-primary btn-sm" onclick="saveRequestEdits('${r.id}')">💾 Enregistrer les modifications</button></div>`:''}
     <div style="margin-top:1rem;font-size:12px;color:var(--text3);">
-      Quota ${r.startDate.substring(0,4)} — Utilisés (tous types) : ${usedDays(r.employee,r.startDate.substring(0,4)).toFixed(1)} j / ${accrued(r.startDate.substring(0,4)).toFixed(1)} j acquis
+      Quota ${r.startDate.substring(0,4)} — Utilisés (tous types) : ${usedDays(r.employee,r.startDate.substring(0,4)).toFixed(1)} j / ${accrued(r.startDate.substring(0,4), r.employee).toFixed(1)} j acquis
     </div>`;
-  const isPending=(r.status||'').toLowerCase()==='pending';
-  document.getElementById('modal-accept').style.display=isPending&&currentUser==='admin'?'':'none';
-  document.getElementById('modal-reject').style.display=isPending&&currentUser==='admin'?'':'none';
+
+  document.getElementById('modal-accept').style.display=isPending&&canManage?'':'none';
+  document.getElementById('modal-reject').style.display=isPending&&canManage?'':'none';
   document.getElementById('detail-modal').classList.add('open');
+}
+
+// Le demandeur (ou un gestionnaire) corrige sa demande encore en attente :
+// type, dates et format. Les jours sont recalculés, le quota et le plafond
+// légal congé maladie sont revérifiés avant sauvegarde.
+function saveRequestEdits(id){
+  const r = REQUESTS.find(x=>x.id===id);
+  if(!r) return;
+  const typeSel = document.getElementById('modal-type-select');
+  const startEl = document.getElementById('modal-start');
+  const endEl   = document.getElementById('modal-end');
+  const fmtEl   = document.getElementById('modal-dayfmt');
+  if(!typeSel || !startEl || !endEl || !fmtEl) return;
+
+  const newType  = typeSel.value;
+  const newStart = startEl.value;
+  const newEnd   = endEl.value;
+  const newFmt   = fmtEl.value;
+  const alertEl  = document.getElementById('modal-edit-alert');
+
+  if(!newType || !newStart || !newEnd){
+    alertEl.className='alert alert-err'; alertEl.innerHTML='⚠ Tous les champs sont obligatoires.'; alertEl.style.display='flex';
+    return;
+  }
+  if(new Date(newEnd) < new Date(newStart)){
+    alertEl.className='alert alert-err'; alertEl.innerHTML='⚠ La date de fin doit être après la date de début.'; alertEl.style.display='flex';
+    return;
+  }
+
+  const newDays = computeBusinessDays(newStart, newEnd, newFmt);
+  const newIsSick = isSickLeaveType(newType);
+
+  // Plafond légal congé maladie, en excluant cette demande elle-même du calcul existant.
+  if(newIsSick){
+    const yr = newStart.substring(0,4);
+    const otherSickUsed = REQUESTS
+      .filter(x=>x.id!==r.id && x.employee===r.employee && isSickLeaveType(x.type) && x.startDate.startsWith(yr) && (x.status||'').toLowerCase()!=='rejected')
+      .reduce((s,x)=>s+parseDays(x.days),0);
+    if(otherSickUsed + newDays > SICK_LEAVE_LEGAL_CAP){
+      alertEl.className='alert alert-err';
+      alertEl.innerHTML=`⛔ Plafond légal de congé maladie dépassé (${(otherSickUsed+newDays).toFixed(1)} / ${SICK_LEAVE_LEGAL_CAP} j autorisés cette année).`;
+      alertEl.style.display='flex';
+      return;
+    }
+    if(!r.certificateUrl){
+      alertEl.className='alert alert-warn';
+      alertEl.innerHTML='⚠ Pensez à joindre un certificat médical pour ce congé maladie (contactez les RH si besoin).';
+      alertEl.style.display='flex';
+    }
+  }
+
+  const dayLabels={full:'Full day','half-am':'Half Day – Morning','half-pm':'Half Day – Afternoon'};
+  const adv = checkAdvanceNotice(newType, newStart);
+
+  r.type=newType; r.startDate=newStart; r.endDate=newEnd;
+  r.dayType=dayLabels[newFmt]; r.days=newDays; r.lastMinute=adv.isLastMinute;
+  save();
+
+  if(USE_GSHEETS){
+    apiPost({action:'updateRequest', id:r.id, updates:{
+      type:r.type, startDate:r.startDate, endDate:r.endDate, dayType:r.dayType, days:r.days, lastMinute: r.lastMinute?'TRUE':'FALSE'
+    }}).catch(e=>console.warn('Sheets sync:', e));
+  }
+
+  alertEl.className='alert alert-success';
+  alertEl.innerHTML = '✅ Demande mise à jour.';
+  alertEl.style.display='flex';
+  const daysDisp = document.getElementById('modal-days-display'); if(daysDisp) daysDisp.textContent = newDays;
+
+  const ap=document.querySelector('.panel.active')?.id;
+  if(ap==='panel-history') renderHistory();
+  if(ap==='panel-approvals') renderApprovals();
+  if(ap==='panel-dashboard') renderDashboard();
+  if(ap==='panel-my-requests') renderMyRequests('all');
+  updatePendingBadge();
+}
+function changeRequestType(id){
+  const r=REQUESTS.find(x=>x.id===id);
+  const sel=document.getElementById('modal-type-select');
+  if(!r||!sel) return;
+  const newType=sel.value;
+  if(newType===r.type) return;
+  const oldType=r.type;
+  r.type=newType;
+  save();
+  if(USE_GSHEETS){
+    apiPost({action:'updateRequest',id:r.id,updates:{type:newType}}).catch(e=>console.warn('Sheets sync:',e));
+  }
+  openDetail(id); // refresh modal
+  const ap=document.querySelector('.panel.active')?.id;
+  if(ap==='panel-history') renderHistory();
+  if(ap==='panel-approvals') renderApprovals();
+  if(ap==='panel-dashboard') renderDashboard();
 }
 function closeModal(){document.getElementById('detail-modal').classList.remove('open');currentModal=null;}
 function modalAction(status){
@@ -1892,8 +2408,8 @@ function renderUserMgmt(){
   const roleOptions = (cur, disabled) => ['employee','team_manager','admin','superadmin','comptable'].map(v =>
     `<option value="${v}" ${cur===v?'selected':''}>${{employee:'👤 Employé',team_manager:'🏷 Manager',admin:'🔑 Admin',superadmin:'👑 Super Admin',comptable:'📊 Comptable'}[v]||v}</option>`
   ).join('');
-  const teamOptions = (cur, disabled) => ['','textile','pharma'].map(v =>
-    `<option value="${v}" ${cur===v?'selected':''}>${{'':"— Aucune —",textile:"🧵 Textile",pharma:"💊 Pharma"}[v]}</option>`
+  const teamOptions = (cur, disabled) => ['',...getSectors().map(s=>s.id)].map(v =>
+    `<option value="${v}" ${cur===v?'selected':''}>${v===''?'— Aucune —':(TEAM_LABELS[v]||v)}</option>`
   ).join('');
 
   document.getElementById('um-tbody').innerHTML = rows.map(e => {
@@ -2535,6 +3051,77 @@ async function deleteLeaveType(idx){
   renderLeaveTypes();
 }
 
+// ─── SECTEURS ────────────────────────────────────────────────
+function renderSectors(){
+  const sectors = getSectors();
+  document.getElementById('sec-list').innerHTML = sectors.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="width:14px;height:14px;border-radius:3px;background:${s.color||'#888'};flex-shrink:0;display:inline-block;"></span>
+      <span style="flex:1;font-weight:500;font-size:13px;">${s.emoji||''} ${s.label}</span>
+      <span style="font-size:11px;color:var(--text3);flex-shrink:0;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.managerEmail?'👤 '+s.managerEmail:'— pas de responsable défini —'}</span>
+      <button class="btn btn-danger btn-sm" onclick="deleteSector(${i})" style="flex-shrink:0;">🗑</button>
+    </div>`).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px 0;">Aucun secteur configuré.</div>';
+}
+
+function addSector(){
+  const label   = document.getElementById('sec-label').value.trim();
+  const emoji   = document.getElementById('sec-emoji').value.trim();
+  const color   = document.getElementById('sec-color').value;
+  const manager = document.getElementById('sec-manager').value.trim().toLowerCase();
+  const al = document.getElementById('sec-alert');
+  if(!label){ al.className='alert alert-err'; al.innerHTML='Libellé obligatoire.'; al.style.display='flex'; return; }
+  const sectors = getSectors();
+  if(sectors.find(s=>s.label.toLowerCase()===label.toLowerCase())){ al.className='alert alert-err'; al.innerHTML='Ce secteur existe déjà.'; al.style.display='flex'; return; }
+  const id = slugifySector(label);
+  if(sectors.find(s=>s.id===id)){ al.className='alert alert-err'; al.innerHTML='Identifiant de secteur déjà utilisé, choisissez un autre libellé.'; al.style.display='flex'; return; }
+  const newSector = { id, label, emoji, color, managerEmail: manager };
+  sectors.push(newSector);
+  saveSectors(sectors);
+  rebuildTeamMaps();
+  populateAllTeamSelects();
+  if(USE_GSHEETS){
+    apiPost({action:'saveSector', sector:newSector})
+      .then(()=>apiGet('getSectors'))
+      .then(fresh=>{
+        if(fresh && fresh.length){
+          saveSectors(fresh);
+          rebuildTeamMaps();
+          populateAllTeamSelects();
+          renderSectors();
+          // Vérifie que le secteur a bien été persisté tel quel (notamment l'emoji)
+          const saved = fresh.find(s=>s.id===id);
+          if(saved && saved.emoji !== emoji){
+            al.className='alert alert-warn';
+            al.innerHTML=`⚠ Secteur ajouté, mais l'emoji n'a pas été correctement enregistré côté Google Sheets (vérifiez l'onglet "sectors").`;
+            al.style.display='flex';
+          }
+        }
+      })
+      .catch(e=>{ al.className='alert alert-warn'; al.innerHTML='⚠ Sauvegardé localement mais erreur GSheets: '+e.message; al.style.display='flex'; });
+  }
+  ['sec-label','sec-emoji','sec-manager'].forEach(id=>document.getElementById(id).value='');
+  al.className='alert alert-success'; al.innerHTML=`✅ Secteur "<strong>${label}</strong>" ajouté${USE_GSHEETS?' et synchronisé':' (local)'}.`; al.style.display='flex';
+  renderSectors();
+}
+
+async function deleteSector(idx){
+  const sectors = getSectors();
+  const target = sectors[idx];
+  if(!target) return;
+  const inUse = getEmployees().filter(e=>e.team===target.id).length;
+  if(inUse > 0 && !confirm(`${inUse} employé(s) sont assignés au secteur "${target.label}". Le supprimer quand même ? (ils resteront avec ce secteur jusqu'à réassignation manuelle)`)) return;
+  else if(inUse === 0 && !confirm(`Supprimer le secteur "${target.label}" ?`)) return;
+  if(USE_GSHEETS){
+    try { await apiPost({action:'deleteSector', id:target.id}); }
+    catch(e){ console.warn('GS deleteSector:', e.message); }
+  }
+  sectors.splice(idx,1);
+  saveSectors(sectors);
+  rebuildTeamMaps();
+  populateAllTeamSelects();
+  renderSectors();
+}
+
 // ─── TEAM DASHBOARD ───────────────────────────────────────────
 function renderTeamDash(){
   REQUESTS=normalizeReqs(JSON.parse(localStorage.getItem('hr_requests')||'[]'));
@@ -2542,14 +3129,14 @@ function renderTeamDash(){
   // dynamic year select
   const _tdSel=document.getElementById('td-year');
   if(_tdSel){
-    let members2=getEmployees(); if(_sess.role!=='superadmin') members2=members2.filter(e=>e.team===_sess.team);
+    let members2=getEmployees(); if(!isFullAccessRole(_sess)) members2=members2.filter(e=>e.team===_sess.team);
     const _tdYears=[...new Set(REQUESTS.filter(r=>members2.find(e=>e.name===r.employee)&&r.startDate).map(r=>r.startDate.substring(0,4)))].filter(Boolean).sort().reverse();
     const _tdPrev=_tdSel.value;
     _tdSel.innerHTML='<option value="all">Toutes les années</option>'+_tdYears.map(y=>`<option value="${y}" ${y===_tdPrev?'selected':''}>${y}</option>`).join('');
   }
   const _rawYr=document.getElementById('td-year')?.value||'all';
   const yr=_rawYr==='all'?String(new Date().getFullYear()):_rawYr;
-  const isSA   = (_sess.role||'') === 'superadmin';
+  const isSA   = isFullAccessRole(_sess);
   const tf     = document.getElementById('td-team-filter')?.value || '';
 
   let members = getEmployees();
@@ -2562,11 +3149,10 @@ function renderTeamDash(){
   const tfEl = document.getElementById('td-team-filter');
   if(tfEl) tfEl.style.display = isSA ? '' : 'none';
 
-  const acc       = accrued(yr);
   const teamReqs  = REQUESTS.filter(r => (r.status||'').toLowerCase()==='accepted' && (_rawYr==='all'||r.startDate.startsWith(yr)) && members.find(e => e.name === r.employee));
   const totalDays = teamReqs.reduce((s,r) => s + parseDays(r.days), 0);
   const pending   = REQUESTS.filter(r => r.status === 'pending' && members.find(e => e.name === r.employee)).length;
-  const over      = members.filter(e => usedDays(e.name, yr) > acc).length;
+  const over      = members.filter(e => usedDays(e.name, yr) > accrued(yr, e)).length;
 
   document.getElementById('td-metrics').innerHTML = `
     <div class="metric"><div class="metric-label">Membres</div><div class="metric-val mv-blue">${members.length}</div></div>
@@ -2577,6 +3163,7 @@ function renderTeamDash(){
   // Quota bars
   document.getElementById('td-quota-bars').innerHTML = members.map(e => {
     const u   = usedDays(e.name, yr);
+    const acc = accrued(yr, e);
     const pct = acc ? Math.min(100, u / acc * 100) : 0;
     const ov  = u > acc;
     const col = ov ? 'var(--red)' : pct > 80 ? 'var(--amber)' : 'var(--blue)';
@@ -2641,7 +3228,7 @@ function renderTeamDash(){
   document.getElementById('td-requests-tbody').innerHTML = recent.length ? recent.map(r => `<tr>
     <td style="font-size:11px;color:var(--blue);">${r.id}</td>
     <td style="font-weight:500;">${r.employee}</td>
-    <td>${typePill(r.type)}</td>
+    <td>${typePill(r.type)}${certBadge(r)}</td>
     <td style="font-size:11px;">${fmtDate(r.startDate)} → ${fmtDate(r.endDate)}</td>
     <td><strong>${r.days}</strong></td>
     <td>${statusPill(r.status)}</td>
@@ -2766,6 +3353,48 @@ async function saveProfile(){
 // ─── COMPTABLE PANEL ─────────────────────────────────────────
 let cptChart = null;
 
+// Affiche, pour un employé donné et la période sélectionnée dans la vue
+// comptable, la liste lisible et triée de ses congés (date, type, jours,
+// statut, certificat) — réutilise la modale de détail existante.
+function openCptDetail(empName, yr, mo, team){
+  const reqs = REQUESTS.filter(r => {
+    if(r.employee !== empName) return false;
+    if(r.status !== 'accepted') return false;
+    if(!r.startDate.startsWith(yr)) return false;
+    if(mo !== 'all' && r.startDate.substring(5,7) !== mo) return false;
+    return true;
+  }).sort((a,b)=>a.startDate.localeCompare(b.startDate));
+
+  document.getElementById('modal-ref').textContent = empName + ' — Détail des congés';
+  const monthLabel = mo==='all' ? `Année ${yr}` : `${['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'][parseInt(mo)]} ${yr}`;
+
+  document.getElementById('modal-body').innerHTML = `
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">${monthLabel} · ${reqs.length} congé(s) accepté(s)</div>
+    <table style="width:100%;font-size:12px;">
+      <thead><tr style="color:var(--text3);text-align:left;border-bottom:1px solid var(--border);">
+        <th style="padding:6px 4px;">Date(s)</th><th>Type</th><th>Jours</th><th>Certificat</th>
+      </tr></thead>
+      <tbody>
+        ${reqs.map(r => {
+          const sameDay = r.startDate === r.endDate;
+          const range = sameDay ? fmtDate(r.startDate) : `${fmtDate(r.startDate)} → ${fmtDate(r.endDate)}`;
+          const certCell = isSickLeaveType(r.type)
+            ? (r.certificateUrl ? `<a href="${r.certificateUrl}" target="_blank" rel="noopener">📎 oui</a>` : '<span style="color:var(--red);">⚠ manquant</span>')
+            : '—';
+          return `<tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:6px 4px;white-space:nowrap;">${range}</td>
+            <td>${typePill(r.type)}</td>
+            <td style="font-weight:600;">${r.days}</td>
+            <td>${certCell}</td>
+          </tr>`;
+        }).join('') || `<tr><td colspan="4" style="padding:10px 4px;color:var(--text3);">Aucun congé sur cette période.</td></tr>`}
+      </tbody>
+    </table>`;
+  document.getElementById('modal-accept').style.display='none';
+  document.getElementById('modal-reject').style.display='none';
+  document.getElementById('detail-modal').classList.add('open');
+}
+
 function renderComptable(){
   const yr    = document.getElementById('cpt-year')?.value  || '2026';
   const mo    = document.getElementById('cpt-month')?.value || 'all';
@@ -2776,7 +3405,27 @@ function renderComptable(){
   document.getElementById('cpt-table-title').textContent =
     mo === 'all' ? `Récapitulatif annuel ${yr}` : `Récapitulatif — ${['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'][parseInt(mo)]} ${yr}`;
 
-  // Filter requests
+  // Ne montrer que les types de congé qui existent réellement (configurés
+  // dans Leave Types / le Google Sheet) — pas une liste figée.
+  const lt = getLeaveTypes();
+  const typeKeys   = lt.map(t => t.label);
+  const paidTypes  = lt.filter(t => t.paid).map(t => t.label);
+  const annualType = lt.find(t => t.id === 'annual') || lt.find(t => isAnnualLeaveType(t.label));
+  const sickType   = lt.find(t => t.id === 'sick')   || lt.find(t => isSickLeaveType(t.label));
+
+  // Header dynamique
+  document.getElementById('cpt-thead-row').innerHTML = `
+    <th>Employé</th><th>Équipe</th>
+    ${typeKeys.map(t => `<th>${t}</th>`).join('')}
+    <th style="background:#eff6ff;color:#1d4ed8;">Total jours</th>
+    <th style="background:#f0fdf4;color:#15803d;">Jours payés</th>
+    <th style="background:#fef2f2;color:#991b1b;">Jours non payés</th>
+    ${annualType?'<th style="background:#fffbeb;color:#92400e;">Congé annuel (pris / acquis)</th><th style="background:#fef9c3;color:#854d0e;">Reste</th>':''}
+    <th>Répartition mensuelle</th>
+    <th>Alertes</th>
+    <th></th>`;
+
+  // Requêtes du mois/année sélectionnés (acceptées) — pour les colonnes du tableau
   const filtReqs = REQUESTS.filter(r => {
     if(r.status !== 'accepted') return false;
     if(!r.startDate.startsWith(yr)) return false;
@@ -2788,12 +3437,27 @@ function renderComptable(){
     return true;
   });
 
+  // Requêtes CUMULÉES depuis janvier jusqu'à la date de référence (= fin du
+  // mois sélectionné s'il est déjà terminé, sinon "aujourd'hui" si le mois
+  // choisi est le mois en cours ou un mois futur) — sert au suivi de
+  // dépassement de quota, cohérent avec le calcul du quota acquis.
+  const cumEndMonth = mo === 'all' ? 11 : parseInt(mo) - 1;
+  const cumRefDate  = cptRefDate(yr, cumEndMonth) || new Date(parseInt(yr), 0, 1); // null (année future) → rien
+  const cumRefStr   = cumRefDate.toISOString().substring(0,10);
+  const cumReqs = REQUESTS.filter(r => {
+    if(r.status !== 'accepted') return false;
+    if(!r.startDate.startsWith(yr)) return false;
+    if(r.startDate > cumRefStr) return false;
+    if(team){
+      const emp = emps.find(e => e.name === r.employee);
+      if(!emp || emp.team !== team) return false;
+    }
+    return true;
+  });
+
   // Get filtered employee list
   let filtEmps = emps.filter(e => e.role !== 'comptable');
   if(team) filtEmps = filtEmps.filter(e => e.team === team);
-
-  const lt = getLeaveTypes();
-  const paidTypes = lt.filter(t => t.paid).map(t => t.label);
 
   // Per-employee stats
   const empStats = filtEmps.map(emp => {
@@ -2804,38 +3468,79 @@ function renderComptable(){
     const total   = reqs.reduce((s,r) => s + parseDays(r.days), 0);
     const paid    = reqs.filter(r => paidTypes.includes(r.type)).reduce((s,r) => s + parseDays(r.days), 0);
     const unpaid  = total - paid;
-    return { emp, byType, total, paid, unpaid, reqs };
-  }).filter(s => s.total > 0 || mo === 'all');
+
+    // ── Répartition mensuelle (lisible, une ligne) ───────────────────────
+    const MONTHS_SHORT=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+    const monthTotals = Array(12).fill(0);
+    reqs.forEach(r => { const m=parseInt(r.startDate.substring(5,7))-1; if(m>=0&&m<12) monthTotals[m]+=parseDays(r.days); });
+    const monthSummary = monthTotals.map((v,i)=>v>0?`${MONTHS_SHORT[i]} ${v.toFixed(1)}j`:null).filter(Boolean).join(' · ') || '—';
+
+    // ── Alertes de dépassement ────────────────────────────────────────────
+    const alerts = [];
+    const cumEmpReqs = cumReqs.filter(r => r.employee === emp.name);
+
+    let annualCol = '', resteCol = '';
+    if(annualType){
+      const cumAnnual = cumEmpReqs.filter(r => isAnnualLeaveType(r.type)).reduce((s,r)=>s+parseDays(r.days),0);
+      const accAsOf   = accrued(yr, emp, cumEndMonth);
+      const solde     = Math.round((accAsOf - cumAnnual)*10)/10;
+      const over      = solde < 0;
+      annualCol = `${cumAnnual.toFixed(1)}j <span style="color:var(--text3);">/ ${accAsOf.toFixed(1)}j</span>`;
+      resteCol  = `<span style="font-weight:700;color:${over?'var(--red)':'var(--green)'};">${solde>0?'+':''}${solde.toFixed(1)}j</span>`;
+      if(over){
+        alerts.push(`⚠ Congé annuel dépassé de ${Math.abs(solde).toFixed(1)}j (${cumAnnual.toFixed(1)}j pris pour ${accAsOf.toFixed(1)}j acquis)`);
+      }
+    }
+    if(sickType){
+      const cumSick = cumEmpReqs.filter(r => isSickLeaveType(r.type)).reduce((s,r)=>s+parseDays(r.days),0);
+      if(cumSick > SICK_LEAVE_LEGAL_CAP){
+        alerts.push(`⚠ Congé maladie dépassé : ${cumSick.toFixed(1)}j / ${SICK_LEAVE_LEGAL_CAP}j légal (+${(cumSick-SICK_LEAVE_LEGAL_CAP).toFixed(1)}j)`);
+      }
+      const sickNoCert = cumEmpReqs.filter(r => isSickLeaveType(r.type) && !r.certificateUrl);
+      if(sickNoCert.length){
+        const daysNoCert = sickNoCert.reduce((s,r)=>s+parseDays(r.days),0);
+        alerts.push(`📎 Certificat manquant : ${sickNoCert.length} demande(s), ${daysNoCert.toFixed(1)}j`);
+      }
+    }
+
+    return { emp, byType, total, paid, unpaid, reqs, monthSummary, annualCol, resteCol, alerts };
+  }).filter(s => s.total > 0 || s.alerts.length > 0 || mo === 'all');
 
   // KPIs
   const totalDays  = filtReqs.reduce((s,r) => s + parseDays(r.days), 0);
   const totalPaid  = filtReqs.filter(r => paidTypes.includes(r.type)).reduce((s,r) => s + parseDays(r.days), 0);
   const totalUnpaid= totalDays - totalPaid;
   const absEmps    = new Set(filtReqs.map(r => r.employee)).size;
+  const empsOverQuota = empStats.filter(s => s.alerts.length > 0).length;
 
   document.getElementById('cpt-metrics').innerHTML = `
     <div class="metric"><div class="metric-lbl">Total jours d'absence</div><div class="metric-val mv-blue">${totalDays.toFixed(1)}</div><div class="metric-sub">${filtReqs.length} demandes</div></div>
     <div class="metric"><div class="metric-lbl">Jours payés</div><div class="metric-val mv-green">${totalPaid.toFixed(1)}</div><div class="metric-sub">congés rémunérés</div></div>
     <div class="metric"><div class="metric-lbl">Jours non payés</div><div class="metric-val mv-red">${totalUnpaid.toFixed(1)}</div><div class="metric-sub">à déduire du salaire</div></div>
     <div class="metric"><div class="metric-lbl">Employés concernés</div><div class="metric-val mv-amber">${absEmps}</div><div class="metric-sub">sur ${filtEmps.length} actifs</div></div>`;
+  if(empsOverQuota > 0){
+    document.getElementById('cpt-metrics').innerHTML += '';
+  }
 
   // Main table
-  const typeKeys = ['Paid Leave (Annual)','Congé maladie','Emergency Leave','Unpaid Leave','Compensatory Off','Other'];
-  const typeLabels = {'Paid Leave (Annual)':'Annuel','Congé maladie':'Maladie','Emergency Leave':'Urgence','Unpaid Leave':'Non payé','Compensatory Off':'Comp.','Other':'Autre'};
-
   document.getElementById('cpt-tbody').innerHTML = empStats.map(s => {
     const teamBadgeHtml = s.emp.team
       ? `<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${TEAM_COLORS[s.emp.team]||'#eee'}22;color:${TEAM_COLORS[s.emp.team]||'#888'};font-weight:600;">${TEAM_LABELS[s.emp.team]}</span>`
       : '—';
-    return `<tr>
+    const rowStyle = s.alerts.length ? 'background:#fef2f2;' : '';
+    return `<tr style="${rowStyle}">
       <td style="font-weight:500;">${s.emp.name}</td>
       <td>${teamBadgeHtml}</td>
       ${typeKeys.map(t => `<td style="text-align:center;">${s.byType[t]>0?s.byType[t].toFixed(1):'—'}</td>`).join('')}
       <td style="text-align:center;font-weight:700;color:var(--blue);">${s.total.toFixed(1)}</td>
       <td style="text-align:center;font-weight:600;color:var(--green);">${s.paid.toFixed(1)}</td>
       <td style="text-align:center;font-weight:600;color:var(--red);">${s.unpaid>0?s.unpaid.toFixed(1):'—'}</td>
+      ${annualType?`<td style="text-align:center;white-space:nowrap;">${s.annualCol}</td><td style="text-align:center;white-space:nowrap;">${s.resteCol}</td>`:''}
+      <td style="font-size:11px;color:var(--text2);max-width:240px;">${s.monthSummary}</td>
+      <td style="max-width:220px;font-size:11px;">${s.alerts.length?s.alerts.map(a=>`<div style="color:var(--red);font-weight:600;margin:2px 0;">${a}</div>`).join(''):'<span style="color:var(--text3);">—</span>'}</td>
+      <td>${s.reqs.length?`<button class="btn btn-ghost btn-sm" onclick="openCptDetail('${s.emp.name.replace(/'/g,"\\'")}', '${yr}', '${mo}', '${team}')">📅 Détail</button>`:''}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:1.5rem;">Aucune absence sur la période.</td></tr>';
+  }).join('') || `<tr><td colspan="${typeKeys.length+7+(annualType?2:0)}" style="text-align:center;color:var(--text3);padding:1.5rem;">Aucune absence sur la période.</td></tr>`;
 
   // Totals footer
   const totByType = {};
@@ -2846,6 +3551,10 @@ function renderComptable(){
     <td style="text-align:center;padding:8px 10px;color:var(--blue);">${totalDays.toFixed(1)}</td>
     <td style="text-align:center;padding:8px 10px;color:var(--green);">${totalPaid.toFixed(1)}</td>
     <td style="text-align:center;padding:8px 10px;color:var(--red);">${totalUnpaid>0?totalUnpaid.toFixed(1):'—'}</td>
+    ${annualType?'<td></td><td></td>':''}
+    <td></td>
+    <td style="text-align:center;padding:8px 10px;color:var(--red);font-weight:600;">${empsOverQuota>0?empsOverQuota+' employé(s)':'—'}</td>
+    <td></td>
   </tr>`;
 
   // Monthly chart (only when showing full year)
@@ -2876,6 +3585,8 @@ function renderComptable(){
       <span style="font-size:11px;min-width:36px;text-align:right;font-weight:600;">${s.total.toFixed(1)} j</span>
       ${s.unpaid>0?`<span style="font-size:9px;color:var(--red);">-${s.unpaid.toFixed(1)}j NP</span>`:''}
     </div>`).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px;">Aucune donnée.</div>';
+
+  // Évolution du solde — employé sélectionné
 }
 
 function renderCptChart(yr, team){
